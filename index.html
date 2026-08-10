@@ -4,7 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Last Wanderer 3D</title>
+    
+    <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d1207">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <style>
         * {
             margin: 0;
@@ -24,6 +33,7 @@
             background-color: #0d1207;
             font-family: 'Courier New', Courier, monospace;
             touch-action: none;
+            position: fixed;
         }
 
         #gameCanvas {
@@ -42,29 +52,11 @@
     <canvas id="gameCanvas"></canvas>
     <script src="main.js"></script>
     <script>
-      // Force Fullscreen and Landscape Orientation on first click/tap
-      function enterFullscreenLandscape() {
-        const elem = document.documentElement;
-        if (elem.requestFullscreen) {
-          elem.requestFullscreen().then(() => {
-            if (screen.orientation && screen.orientation.lock) {
-              screen.orientation.lock('landscape').catch(e => console.warn("Orientation lock failed:", e));
-            }
-          }).catch(e => console.warn("Fullscreen request failed:", e));
-        } else if (elem.webkitRequestFullscreen) { // iOS Safari fallback
-          elem.webkitRequestFullscreen();
-        }
-      }
-
-      // Listen for the first interaction to trigger fullscreen
-      window.addEventListener('pointerdown', function handleFirstInteraction() {
-        enterFullscreenLandscape();
-        window.removeEventListener('pointerdown', handleFirstInteraction);
-      });
-
       // Register Service Worker for PWA
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(e => console.warn("SW registration failed:", e));
+        });
       }
     </script>
 </body>
