@@ -24,8 +24,30 @@ const rawSVGs = {
   btn_jump: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><path d="M 32,16 L 46,30 H 38 V 46 H 26 V 30 H 18 Z" fill="#FFFFFF" /><path d="M 32,20 L 42,30 H 36 V 42 H 28 V 30 H 22 Z" fill="#88B04B" /></svg>`,
   btn_craft: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="12" height="12" fill="#FFFFFF" /><rect x="20" y="20" width="8" height="8" fill="#121809" /><rect x="34" y="18" width="12" height="12" fill="#FFFFFF" /><rect x="36" y="20" width="8" height="8" fill="#121809" /><rect x="18" y="34" width="12" height="12" fill="#FFFFFF" /><rect x="20" y="36" width="8" height="8" fill="#121809" /><rect x="34" y="34" width="12" height="12" fill="#FFFFFF" /><rect x="36" y="36" width="8" height="8" fill="#88B04B" /></svg>`,
   btn_inventory: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="28" height="10" fill="#FFFFFF" /><rect x="20" y="20" width="24" height="6" fill="#88B04B" /><rect x="22" y="20" width="4" height="22" fill="#222B14" /><rect x="38" y="20" width="4" height="22" fill="#222B14" /><rect x="22" y="28" width="4" height="4" fill="#FFD700" /><rect x="38" y="28" width="4" height="4" fill="#FFD700" /><rect x="18" y="28" width="28" height="18" fill="#FFFFFF" /><rect x="20" y="30" width="24" height="14" fill="#A2D15B" /></svg>`,
+  
+  // Menus & Slots
+  ui_window: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" width="100%" height="100%" shape-rendering="crispEdges" preserveAspectRatio="none"><path d="M 8,0 H 112 V 4 H 116 V 8 H 120 V 72 H 116 V 76 H 112 V 80 H 8 V 76 H 4 V 72 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 112 V 8 H 116 V 72 H 112 V 76 H 8 V 72 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="6" y="6" width="108" height="68" fill="#4A5D23" /><rect x="30" y="10" width="60" height="14" fill="#FFFFFF" /><rect x="32" y="12" width="56" height="10" fill="#121809" /><rect x="14" y="28" width="92" height="40" fill="#121809" /><path d="M 14,28 H 106 V 31 H 17 V 68 H 14 Z" fill="#0A0D06" /></svg>`,
+  ui_main_menu_frame: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="100%" height="100%" shape-rendering="crispEdges"><path d="M 8,0 H 152 V 4 H 156 V 8 H 160 V 112 H 156 V 116 H 152 V 120 H 8 V 116 H 4 V 112 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 152 V 8 H 156 V 112 H 152 V 116 H 8 V 112 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="6" y="6" width="148" height="108" fill="#4A5D23" /><rect x="10" y="10" width="8" height="8" fill="#88B04B" /><rect x="142" y="10" width="8" height="8" fill="#88B04B" /><rect x="10" y="102" width="8" height="8" fill="#88B04B" /><rect x="142" y="102" width="8" height="8" fill="#88B04B" /><rect x="35" y="14" width="90" height="18" fill="#FFFFFF" /><rect x="37" y="16" width="86" height="14" fill="#121809" /><rect x="18" y="38" width="124" height="68" fill="#121809" /><path d="M 18,38 H 142 V 41 H 21 V 106 H 18 Z" fill="#0A0D06" /></svg>`,
+  recipe_row: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 32" width="100%" height="100%" shape-rendering="crispEdges"><path d="M 4,0 H 156 V 2 H 158 V 4 H 160 V 28 H 158 V 30 H 156 V 32 H 4 V 30 H 2 V 28 H 0 V 4 H 2 V 2 H 4 Z" fill="#FFFFFF" /><path d="M 4,2 H 156 V 4 H 158 V 28 H 156 V 30 H 4 V 28 H 2 V 4 H 4 Z" fill="#222B14" /><rect x="4" y="4" width="152" height="24" fill="#4A5D23" /><rect x="8" y="6" width="20" height="20" fill="#FFFFFF" /><rect x="10" y="8" width="16" height="16" fill="#121809" /><rect x="32" y="6" width="120" height="20" fill="#121809" /></svg>`,
+  inventory_slot: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 8,0 H 56 V 4 H 60 V 8 H 64 V 56 H 60 V 60 H 56 V 64 H 8 V 60 H 4 V 56 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 56 V 8 H 60 V 56 H 56 V 60 H 8 V 56 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="8" y="8" width="48" height="48" fill="#4A5D23" /><rect x="12" y="12" width="40" height="40" fill="#121809" /><path d="M 12,12 H 52 V 16 H 16 V 52 H 12 Z" fill="#0A0D06" /></svg>`,
   hotbar_slot: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 8,0 H 56 V 4 H 60 V 8 H 64 V 56 H 60 V 60 H 56 V 64 H 8 V 60 H 4 V 56 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 56 V 8 H 60 V 56 H 56 V 60 H 8 V 56 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="8" y="8" width="48" height="48" fill="#4A5D23" /><rect x="12" y="12" width="40" height="40" fill="#121809" /><path d="M 12,12 H 52 V 16 H 16 V 52 H 12 Z" fill="#0A0D06" /></svg>`,
-  ui_window: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" width="100%" height="100%" shape-rendering="crispEdges" preserveAspectRatio="none"><path d="M 8,0 H 112 V 4 H 116 V 8 H 120 V 72 H 116 V 76 H 112 V 80 H 8 V 76 H 4 V 72 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 112 V 8 H 116 V 72 H 112 V 76 H 8 V 72 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="6" y="6" width="108" height="68" fill="#4A5D23" /><rect x="30" y="10" width="60" height="14" fill="#FFFFFF" /><rect x="32" y="12" width="56" height="10" fill="#121809" /><rect x="14" y="28" width="92" height="40" fill="#121809" /><path d="M 14,28 H 106 V 31 H 17 V 68 H 14 Z" fill="#0A0D06" /></svg>`
+  hotbar_selector: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 8,0 H 56 V 4 H 60 V 8 H 64 V 56 H 60 V 60 H 56 V 64 H 8 V 60 H 4 V 56 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 56 V 8 H 60 V 56 H 56 V 60 H 8 V 56 H 4 V 8 H 8 Z" fill="#A2D15B" /><rect x="10" y="10" width="44" height="44" fill="none" stroke="#222B14" stroke-width="2" /><rect x="12" y="12" width="40" height="40" fill="none" stroke="#88B04B" stroke-width="2" /></svg>`,
+  
+  // Menu Buttons
+  menu_button_start: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" width="100%" height="100%" shape-rendering="crispEdges"><path d="M 4,0 H 116 V 2 H 118 V 4 H 120 V 36 H 118 V 38 H 116 V 40 H 4 V 38 H 2 V 36 H 0 V 4 H 2 V 2 H 4 Z" fill="#FFFFFF" /><path d="M 4,2 H 116 V 4 H 118 V 36 H 116 V 38 H 4 V 36 H 2 V 4 H 4 Z" fill="#222B14" /><rect x="4" y="4" width="112" height="32" fill="#4A5D23" /><rect x="6" y="6" width="108" height="4" fill="#6B8532" /></svg>`,
+  
+  // Item Icons
+  item_wood: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="22" y="22" width="28" height="24" fill="#5C4033" /><rect x="22" y="42" width="28" height="4" fill="#3B2A1A" /><rect x="28" y="26" width="4" height="16" fill="#4A3429" /><rect x="38" y="24" width="4" height="18" fill="#4A3429" /><path d="M 14,22 H 22 V 42 H 14 Z" fill="#8B6914" /><path d="M 16,24 H 20 V 40 H 16 Z" fill="#C49A45" /><rect x="18" y="28" width="2" height="8" fill="#8B6914" /></svg>`,
+  item_stone: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 32,14 L 52,24 L 32,34 L 12,24 Z" fill="#B0B0B0" /><path d="M 12,24 L 32,34 V 50 L 12,40 Z" fill="#808080" /><path d="M 32,34 L 52,24 V 40 L 32,50 Z" fill="#505050" /><path d="M 32,16 L 48,24 L 32,32 L 16,24 Z" fill="#C8C8C8" /><rect x="20" y="30" width="4" height="4" fill="#606060" /></svg>`,
+  item_metal: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="28" y="12" width="8" height="40" fill="#707070" /><rect x="12" y="28" width="40" height="8" fill="#707070" /><rect x="18" y="18" width="28" height="28" fill="#808080" /><rect x="20" y="20" width="24" height="24" fill="#A0A0A0" /><rect x="32" y="22" width="6" height="6" fill="#B85C37" /><rect x="20" y="32" width="6" height="6" fill="#B85C37" /><rect x="26" y="26" width="12" height="12" fill="#222B14" /></svg>`,
+  item_fiber: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 32,12 C 48,16 52,36 36,48 L 16,52 L 20,32 C 24,16 28,12 32,12 Z" fill="#557A2B" /><path d="M 32,14 C 44,18 48,34 34,44 L 20,48 L 22,32 C 26,18 28,14 32,14 Z" fill="#88B04B" /><path d="M 14,54 L 32,24" stroke="#3B2F1F" stroke-width="3" /><path d="M 26,34 L 34,30" stroke="#A2D15B" stroke-width="2" /><path d="M 22,40 L 30,38" stroke="#A2D15B" stroke-width="2" /></svg>`,
+  item_axe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="16" y="44" width="4" height="4" fill="#5C4033" /><rect x="20" y="40" width="4" height="4" fill="#5C4033" /><rect x="24" y="36" width="4" height="4" fill="#7A5230" /><rect x="28" y="32" width="4" height="4" fill="#7A5230" /><rect x="32" y="28" width="4" height="4" fill="#99663D" /><rect x="36" y="24" width="4" height="4" fill="#99663D" /><rect x="36" y="16" width="12" height="12" fill="#808080" /><rect x="44" y="12" width="8" height="12" fill="#A0A0A0" /><rect x="48" y="12" width="4" height="4" fill="#FFFFFF" /><rect x="36" y="24" width="6" height="6" fill="#C49A45" /></svg>`,
+  item_pickaxe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="16" y="44" width="4" height="4" fill="#5C4033" /><rect x="20" y="40" width="4" height="4" fill="#5C4033" /><rect x="24" y="36" width="4" height="4" fill="#7A5230" /><rect x="28" y="32" width="4" height="4" fill="#7A5230" /><rect x="32" y="28" width="4" height="4" fill="#99663D" /><rect x="36" y="24" width="4" height="4" fill="#99663D" /><rect x="34" y="12" width="4" height="6" fill="#808080" /><rect x="38" y="14" width="12" height="8" fill="#A0A0A0" /><rect x="46" y="22" width="8" height="4" fill="#808080" /><rect x="42" y="14" width="4" height="4" fill="#FFFFFF" /></svg>`,
+  item_torch: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="28" y="28" width="8" height="24" fill="#5C4033" /><rect x="30" y="30" width="4" height="22" fill="#7A5230" /><rect x="24" y="16" width="16" height="14" fill="#FF4500" /><rect x="26" y="12" width="12" height="14" fill="#FF8C00" /><rect x="28" y="10" width="8" height="12" fill="#FFD700" /><rect x="30" y="14" width="4" height="4" fill="#FFFFFF" /></svg>`,
+  item_campfire: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><ellipse cx="32" cy="46" rx="22" ry="10" fill="#505050" /><ellipse cx="32" cy="44" rx="18" ry="8" fill="#222B14" /><rect x="18" y="42" width="28" height="4" transform="rotate(15 32 44)" fill="#5C4033" /><rect x="18" y="42" width="28" height="4" transform="rotate(-15 32 44)" fill="#4A3429" /><path d="M 24,38 C 24,24 32,16 32,16 C 32,16 40,24 40,38 Z" fill="#FF4500" /><path d="M 27,38 C 27,28 32,20 32,20 C 32,20 37,28 37,38 Z" fill="#FF8C00" /><rect x="30" y="30" width="4" height="8" fill="#FFD700" /></svg>`,
+  
+  // Feedback
+  feedback_banner: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 32" width="100%" height="100%" shape-rendering="crispEdges"><rect x="0" y="0" width="140" height="32" rx="4" fill="#121809" opacity="0.85" /><rect x="2" y="2" width="136" height="28" rx="2" fill="#222B14" opacity="0.9" stroke="#88B04B" stroke-width="2" /></svg>`
 };
 
 // --- UI Asset Loader ---
@@ -38,6 +60,12 @@ for (const name in rawSVGs) {
 function drawUIImage(imgName, cx, cy, size) {
     if (uiAssets[imgName] && uiAssets[imgName].complete) {
         ctx.drawImage(uiAssets[imgName], cx - size/2, cy - size/2, size, size);
+    }
+}
+
+function drawUIRect(imgName, x, y, w, h) {
+    if (uiAssets[imgName] && uiAssets[imgName].complete) {
+        ctx.drawImage(uiAssets[imgName], x, y, w, h);
     }
 }
 
@@ -468,13 +496,29 @@ function render() {
     ctx.fillRect(0, 0, GAME_W, GAME_H);
 
     if (game.state === 'menu') {
+        // Draw Main Menu Frame
+        let frameW = GAME_W * 0.8;
+        let frameH = frameW * (120 / 160); // 4:3 aspect ratio
+        let frameX = (GAME_W - frameW) / 2;
+        let frameY = (GAME_H - frameH) / 2;
+        drawUIRect('ui_main_menu_frame', frameX, frameY, frameW, frameH);
+        
+        // Draw Title Text
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 64px Arial';
+        ctx.font = 'bold 48px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('THE LAST WANDERER', GAME_W/2, GAME_H/2 - 40);
-        ctx.font = '32px Arial';
-        ctx.fillStyle = 'rgb(200,200,200)';
-        ctx.fillText('Click to Wander', GAME_W/2, GAME_H/2 + 30);
+        ctx.fillText('THE LAST WANDERER', GAME_W/2, frameY + frameH * 0.25);
+        
+        // Draw Start Button
+        let btnW = frameW * 0.5;
+        let btnH = btnW * (40 / 120); // 3:1 aspect ratio
+        let btnX = (GAME_W - btnW) / 2;
+        let btnY = frameY + frameH * 0.5;
+        drawUIRect('menu_button_start', btnX, btnY, btnW, btnH);
+        
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText("START", GAME_W/2, btnY + btnH * 0.65);
         return;
     }
 
@@ -556,8 +600,17 @@ function render() {
     Object.keys(game.inventory).forEach(item => { if (game.inventory[item] > 0 || ['Wood','Stone','Metal','Fiber'].includes(item)) { ctx.fillText(`${item}: ${game.inventory[item]}`, 20, invY); invY += 30; } });
     let tStr = game.ambientLight < 0.5 ? "Night" : "Day";
     ctx.textAlign = 'right'; ctx.fillText(`Time: ${tStr}`, GAME_W - 20, 40);
-    ctx.textAlign = 'center';
-    game.feedbackTexts.forEach(ft => { ctx.globalAlpha = Math.max(0, ft.timer / 2.0); ctx.fillStyle = 'yellow'; ctx.fillText(ft.text, ft.x, ft.y); });
+    
+    // Feedback Banners
+    game.feedbackTexts.forEach(ft => {
+        ctx.globalAlpha = Math.max(0, ft.timer / 2.0);
+        let bw = 140, bh = 32;
+        drawUIRect('feedback_banner', ft.x - bw/2, ft.y - bh/2, bw, bh);
+        ctx.fillStyle = '#A2D15B';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(ft.text, ft.x, ft.y + 6);
+    });
     ctx.globalAlpha = 1.0;
 
     // --- Hotbar ---
@@ -568,16 +621,19 @@ function render() {
     for (let i = 0; i < 5; i++) {
         let hx = hbStartX + i * hbSize;
         drawUIImage('hotbar_slot', hx + hbSize/2, hbY + hbSize/2, hbSize);
-        if (game.selectedSlot === i) {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(hx, hbY, hbSize, hbSize);
+        
+        let itemName = game.hotbar[i];
+        if (itemName !== 'Hands' && game.inventory[itemName] > 0) {
+            drawUIImage('item_' + itemName.toLowerCase(), hx + hbSize/2, hbY + hbSize/2, hbSize * 0.8);
         }
-        ctx.fillStyle = 'white'; ctx.font = '10px Arial'; ctx.textAlign = 'center';
-        ctx.fillText(game.hotbar[i], hx + hbSize/2, hbY + hbSize - 5);
-        let count = game.inventory[game.hotbar[i]];
+        
+        if (game.selectedSlot === i) {
+            drawUIImage('hotbar_selector', hx + hbSize/2, hbY + hbSize/2, hbSize);
+        }
+        
+        let count = game.inventory[itemName];
         if (count !== undefined && count > 0) {
-            ctx.font = 'bold 16px Arial'; ctx.textAlign = 'right';
+            ctx.fillStyle = 'white'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'right';
             ctx.fillText(count, hx + hbSize - 5, hbY + 18);
         }
     }
@@ -586,7 +642,6 @@ function render() {
     if (game.state === 'playing') {
         let btns = getButtons();
         
-        // Joystick (Faint hint when not active)
         let jx = game.joy.active ? game.joy.x : 120;
         let jy = game.joy.active ? game.joy.y : GAME_H - 140;
         ctx.globalAlpha = game.joy.active ? 1.0 : 0.3;
@@ -612,10 +667,7 @@ function render() {
         let winX = (GAME_W / 2) - (winW / 2);
         let winY = (GAME_H / 2) - (winH / 2);
         
-        // Draw SVG Window Stretched
-        if (uiAssets['ui_window'].complete) {
-            ctx.drawImage(uiAssets['ui_window'], winX, winY, winW, winH);
-        }
+        drawUIRect('ui_window', winX, winY, winW, winH);
         
         ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.font = 'bold 24px Arial';
         ctx.fillText(game.state.toUpperCase(), GAME_W/2, winY + 40);
@@ -631,15 +683,15 @@ function render() {
                 let row = Math.floor(i / cols);
                 let ix = startX + col * boxW;
                 let iy = startY + row * boxH;
-                ctx.fillStyle = 'rgba(18, 24, 9, 0.9)';
-                ctx.fillRect(ix, iy, boxW-10, boxH-10);
-                ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
-                ctx.strokeRect(ix, iy, boxW-10, boxH-10);
-                if(game.inventory[items[i]] > 0 || ['Wood','Stone','Metal','Fiber'].includes(items[i])) {
-                    ctx.fillStyle = 'white'; ctx.font = '12px Arial'; ctx.textAlign = 'center';
-                    ctx.fillText(items[i], ix + (boxW-10)/2, iy + 20);
-                    ctx.font = 'bold 24px Arial';
-                    ctx.fillText(game.inventory[items[i]], ix + (boxW-10)/2, iy + (boxH-10)/2 + 10);
+                
+                drawUIImage('inventory_slot', ix + (boxW-10)/2, iy + (boxH-10)/2, boxW-10);
+                
+                let itemName = items[i];
+                if(game.inventory[itemName] > 0 || ['Wood','Stone','Metal','Fiber'].includes(itemName)) {
+                    drawUIImage('item_' + itemName.toLowerCase(), ix + (boxW-10)/2, iy + (boxH-10)/2, (boxW-10) * 0.8);
+                    
+                    ctx.fillStyle = 'white'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'right';
+                    ctx.fillText(game.inventory[itemName], ix + boxW - 15, iy + boxH - 15);
                 }
             }
         }
@@ -648,21 +700,28 @@ function render() {
             game.craftSlots = [];
             let rx = GAME_W/2, ry = winY + 80;
             ctx.font = '20px Arial';
+            ctx.fillStyle = 'white';
             ctx.fillText('Recipes (Tap to Craft)', rx, ry - 20);
+            
             game.recipes.forEach((rec, i) => {
-                let sx = rx - 150, sy = ry + i * 55;
-                ctx.fillStyle = 'rgba(18, 24, 9, 0.9)';
-                ctx.fillRect(sx, sy, 300, 45);
-                ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
-                ctx.strokeRect(sx, sy, 300, 45);
-                ctx.fillStyle = rec.color;
-                ctx.fillRect(sx+8, sy+8, 24, 24);
+                let sx = rx - 180, sy = ry + i * 50;
+                let rowW = 360, rowH = 40;
+                
+                drawUIRect('recipe_row', sx, sy, rowW, rowH);
+                
+                // Draw Item Icon inside the row
+                drawUIImage('item_' + rec.result.toLowerCase(), sx + 18, sy + rowH/2, 28);
+                
                 ctx.textAlign = 'left'; ctx.fillStyle = 'white';
-                ctx.fillText(rec.name, sx+45, sy+18);
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(rec.name, sx + 45, sy + 18);
+                
                 let costStr = Object.keys(rec.cost).map(r => `${r}:${rec.cost[r]}`).join(' | ');
-                ctx.fillStyle = 'rgb(200,200,200)';
-                ctx.fillText(`Cost: ${costStr}`, sx+45, sy+35);
-                game.craftSlots.push({ recipe: rec, x: sx, y: sy, w: 300, h: 45 });
+                ctx.fillStyle = '#88B04B';
+                ctx.font = '10px Arial';
+                ctx.fillText(`COST: ${costStr}`, sx + 45, sy + 32);
+                
+                game.craftSlots.push({ recipe: rec, x: sx, y: sy, w: rowW, h: rowH });
             });
         }
     }
