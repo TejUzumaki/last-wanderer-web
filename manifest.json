@@ -1,8 +1,18 @@
 {
   "name": "The Last Wanderer 3D",
   "short_name": "Wanderer",
+  "description": "A 3D pixel-art survival game where humanity has disappeared and nature reclaims the earth.",
   "start_url": "/",
   "display": "fullscreen",
-  "background_color": "#000000",
-  "theme_color": "#000000"
+  "orientation": "landscape",
+  "background_color": "#0d1207",
+  "theme_color": "#0d1207",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
