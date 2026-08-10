@@ -1,0 +1,8 @@
+{
+  "name": "The Last Wanderer 3D",
+  "short_name": "Wanderer",
+  "start_url": "/",
+  "display": "fullscreen",
+  "background_color": "#000000",
+  "theme_color": "#000000"
+}
