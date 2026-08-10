@@ -16,7 +16,7 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// --- Hardcoded Pixel-Art SVG Assets ---
+// --- Pixel-Art SVG Assets ---
 const rawSVGs = {
   joystick_base: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="30" y="16" width="4" height="32" fill="#222B14" /><rect x="16" y="30" width="32" height="4" fill="#222B14" /><rect x="30" y="18" width="4" height="28" fill="#88B04B" opacity="0.6" /><rect x="18" y="30" width="28" height="4" fill="#88B04B" opacity="0.6" /></svg>`,
   joystick_knob: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 24,12 H 40 V 16 H 48 V 24 H 52 V 40 H 48 V 48 H 40 V 52 H 24 V 48 H 16 V 40 H 12 V 24 H 16 V 16 H 24 Z" fill="#FFFFFF" /><path d="M 24,16 H 40 V 20 H 44 V 24 H 48 V 40 H 44 V 44 H 40 V 48 H 24 V 44 H 20 V 40 H 16 V 24 H 20 V 20 H 24 Z" fill="#222B14" /><rect x="20" y="20" width="24" height="24" fill="#88B04B" /><rect x="24" y="24" width="16" height="16" fill="#A2D15B" /><rect x="26" y="26" width="6" height="6" fill="#FFFFFF" /></svg>`,
@@ -25,7 +25,7 @@ const rawSVGs = {
   btn_craft: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="12" height="12" fill="#FFFFFF" /><rect x="20" y="20" width="8" height="8" fill="#121809" /><rect x="34" y="18" width="12" height="12" fill="#FFFFFF" /><rect x="36" y="20" width="8" height="8" fill="#121809" /><rect x="18" y="34" width="12" height="12" fill="#FFFFFF" /><rect x="20" y="36" width="8" height="8" fill="#121809" /><rect x="34" y="34" width="12" height="12" fill="#FFFFFF" /><rect x="36" y="36" width="8" height="8" fill="#88B04B" /></svg>`,
   btn_inventory: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="28" height="10" fill="#FFFFFF" /><rect x="20" y="20" width="24" height="6" fill="#88B04B" /><rect x="22" y="20" width="4" height="22" fill="#222B14" /><rect x="38" y="20" width="4" height="22" fill="#222B14" /><rect x="22" y="28" width="4" height="4" fill="#FFD700" /><rect x="38" y="28" width="4" height="4" fill="#FFD700" /><rect x="18" y="28" width="28" height="18" fill="#FFFFFF" /><rect x="20" y="30" width="24" height="14" fill="#A2D15B" /></svg>`,
   
-  // Menus & Slots
+  // Frame Windows & Interface
   ui_window: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" width="100%" height="100%" shape-rendering="crispEdges" preserveAspectRatio="none"><path d="M 8,0 H 112 V 4 H 116 V 8 H 120 V 72 H 116 V 76 H 112 V 80 H 8 V 76 H 4 V 72 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 112 V 8 H 116 V 72 H 112 V 76 H 8 V 72 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="6" y="6" width="108" height="68" fill="#4A5D23" /><rect x="30" y="10" width="60" height="14" fill="#FFFFFF" /><rect x="32" y="12" width="56" height="10" fill="#121809" /><rect x="14" y="28" width="92" height="40" fill="#121809" /><path d="M 14,28 H 106 V 31 H 17 V 68 H 14 Z" fill="#0A0D06" /></svg>`,
   ui_main_menu_frame: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="100%" height="100%" shape-rendering="crispEdges"><path d="M 8,0 H 152 V 4 H 156 V 8 H 160 V 112 H 156 V 116 H 152 V 120 H 8 V 116 H 4 V 112 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 152 V 8 H 156 V 112 H 152 V 116 H 8 V 112 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="6" y="6" width="148" height="108" fill="#4A5D23" /><rect x="10" y="10" width="8" height="8" fill="#88B04B" /><rect x="142" y="10" width="8" height="8" fill="#88B04B" /><rect x="10" y="102" width="8" height="8" fill="#88B04B" /><rect x="142" y="102" width="8" height="8" fill="#88B04B" /><rect x="35" y="14" width="90" height="18" fill="#FFFFFF" /><rect x="37" y="16" width="86" height="14" fill="#121809" /><rect x="18" y="38" width="124" height="68" fill="#121809" /><path d="M 18,38 H 142 V 41 H 21 V 106 H 18 Z" fill="#0A0D06" /></svg>`,
   recipe_row: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 32" width="100%" height="100%" shape-rendering="crispEdges"><path d="M 4,0 H 156 V 2 H 158 V 4 H 160 V 28 H 158 V 30 H 156 V 32 H 4 V 30 H 2 V 28 H 0 V 4 H 2 V 2 H 4 Z" fill="#FFFFFF" /><path d="M 4,2 H 156 V 4 H 158 V 28 H 156 V 30 H 4 V 28 H 2 V 4 H 4 Z" fill="#222B14" /><rect x="4" y="4" width="152" height="24" fill="#4A5D23" /><rect x="8" y="6" width="20" height="20" fill="#FFFFFF" /><rect x="10" y="8" width="16" height="16" fill="#121809" /><rect x="32" y="6" width="120" height="20" fill="#121809" /></svg>`,
@@ -36,7 +36,7 @@ const rawSVGs = {
   // Menu Buttons
   menu_button_start: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" width="100%" height="100%" shape-rendering="crispEdges"><path d="M 4,0 H 116 V 2 H 118 V 4 H 120 V 36 H 118 V 38 H 116 V 40 H 4 V 38 H 2 V 36 H 0 V 4 H 2 V 2 H 4 Z" fill="#FFFFFF" /><path d="M 4,2 H 116 V 4 H 118 V 36 H 116 V 38 H 4 V 36 H 2 V 4 H 4 Z" fill="#222B14" /><rect x="4" y="4" width="112" height="32" fill="#4A5D23" /><rect x="6" y="6" width="108" height="4" fill="#6B8532" /></svg>`,
   
-  // Item Icons
+  // Items
   item_wood: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="22" y="22" width="28" height="24" fill="#5C4033" /><rect x="22" y="42" width="28" height="4" fill="#3B2A1A" /><rect x="28" y="26" width="4" height="16" fill="#4A3429" /><rect x="38" y="24" width="4" height="18" fill="#4A3429" /><path d="M 14,22 H 22 V 42 H 14 Z" fill="#8B6914" /><path d="M 16,24 H 20 V 40 H 16 Z" fill="#C49A45" /><rect x="18" y="28" width="2" height="8" fill="#8B6914" /></svg>`,
   item_stone: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 32,14 L 52,24 L 32,34 L 12,24 Z" fill="#B0B0B0" /><path d="M 12,24 L 32,34 V 50 L 12,40 Z" fill="#808080" /><path d="M 32,34 L 52,24 V 40 L 32,50 Z" fill="#505050" /><path d="M 32,16 L 48,24 L 32,32 L 16,24 Z" fill="#C8C8C8" /><rect x="20" y="30" width="4" height="4" fill="#606060" /></svg>`,
   item_metal: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="28" y="12" width="8" height="40" fill="#707070" /><rect x="12" y="28" width="40" height="8" fill="#707070" /><rect x="18" y="18" width="28" height="28" fill="#808080" /><rect x="20" y="20" width="24" height="24" fill="#A0A0A0" /><rect x="32" y="22" width="6" height="6" fill="#B85C37" /><rect x="20" y="32" width="6" height="6" fill="#B85C37" /><rect x="26" y="26" width="12" height="12" fill="#222B14" /></svg>`,
@@ -46,11 +46,11 @@ const rawSVGs = {
   item_torch: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="28" y="28" width="8" height="24" fill="#5C4033" /><rect x="30" y="30" width="4" height="22" fill="#7A5230" /><rect x="24" y="16" width="16" height="14" fill="#FF4500" /><rect x="26" y="12" width="12" height="14" fill="#FF8C00" /><rect x="28" y="10" width="8" height="12" fill="#FFD700" /><rect x="30" y="14" width="4" height="4" fill="#FFFFFF" /></svg>`,
   item_campfire: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><ellipse cx="32" cy="46" rx="22" ry="10" fill="#505050" /><ellipse cx="32" cy="44" rx="18" ry="8" fill="#222B14" /><rect x="18" y="42" width="28" height="4" transform="rotate(15 32 44)" fill="#5C4033" /><rect x="18" y="42" width="28" height="4" transform="rotate(-15 32 44)" fill="#4A3429" /><path d="M 24,38 C 24,24 32,16 32,16 C 32,16 40,24 40,38 Z" fill="#FF4500" /><path d="M 27,38 C 27,28 32,20 32,20 C 32,20 37,28 37,38 Z" fill="#FF8C00" /><rect x="30" y="30" width="4" height="8" fill="#FFD700" /></svg>`,
   
-  // Feedback
+  // Floating Banners
   feedback_banner: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 32" width="100%" height="100%" shape-rendering="crispEdges"><rect x="0" y="0" width="140" height="32" rx="4" fill="#121809" opacity="0.85" /><rect x="2" y="2" width="136" height="28" rx="2" fill="#222B14" opacity="0.9" stroke="#88B04B" stroke-width="2" /></svg>`
 };
 
-// --- UI Asset Loader ---
+// --- Asset Preloader ---
 const uiAssets = {};
 for (const name in rawSVGs) {
     uiAssets[name] = new Image();
@@ -69,20 +69,20 @@ function drawUIRect(imgName, x, y, w, h) {
     }
 }
 
-// --- Game State ---
+// --- Game Engine Setup ---
 const game = {
-    mapW: 20, mapH: 20, map: [], obstacles: [], entities: [], grassTufts: [], lights: [],
-    player: { tx: 10, ty: 10, x: 10.5, z: 10.5, y: 0, jumpY: 0, path: [], state: 'idle', angle: 0, targetAngle: 0 },
+    mapW: 22, mapH: 22, map: [], obstacles: [], entities: [], grassTufts: [], lights: [],
+    player: { tx: 11, ty: 11, x: 11.5, z: 11.5, y: 0, jumpY: 0, path: [], state: 'idle', angle: 0, targetAngle: 0 },
     frameCount: 0, destinationMarker: null, pendingInteraction: null,
-    inventory: { Wood: 0, Stone: 0, Metal: 0, Fiber: 0, Axe: 0, Pickaxe: 0, Campfire: 0, Torch: 0 },
+    inventory: { Wood: 2, Stone: 2, Metal: 0, Fiber: 1, Axe: 0, Pickaxe: 0, Campfire: 0, Torch: 0 },
     feedbackTexts: [], state: 'menu',
     recipes: [
-        { name: 'Stone Axe', cost: { Wood: 3, Stone: 2 }, result: 'Axe', color: 'rgb(150,100,50)' },
-        { name: 'Stone Pickaxe', cost: { Wood: 2, Stone: 3 }, result: 'Pickaxe', color: 'rgb(100,100,100)' },
-        { name: 'Torch', cost: { Wood: 1, Fiber: 1 }, result: 'Torch', color: 'rgb(255,200,0)' },
-        { name: 'Campfire', cost: { Wood: 5, Stone: 3 }, result: 'Campfire', color: 'rgb(200,100,30)' }
+        { name: 'Stone Axe', cost: { Wood: 3, Stone: 2 }, result: 'Axe' },
+        { name: 'Stone Pickaxe', cost: { Wood: 2, Stone: 3 }, result: 'Pickaxe' },
+        { name: 'Torch', cost: { Wood: 1, Fiber: 1 }, result: 'Torch' },
+        { name: 'Campfire', cost: { Wood: 5, Stone: 3 }, result: 'Campfire' }
     ],
-    craftSlots: [], timeOfDay: 0.4, ambientLight: 1.0, skyColor: { r: 135, g: 206, b: 235 },
+    craftSlots: [], timeOfDay: 0.35, ambientLight: 1.0,
     joy: { active: false, x: 0, y: 0, dx: 0, dy: 0 },
     hotbar: ['Hands', 'Axe', 'Pickaxe', 'Torch', 'Campfire'],
     selectedSlot: 0
@@ -92,28 +92,29 @@ function getHeight(tx, ty) {
     if (tx < 0 || ty < 0 || tx >= game.mapW || ty >= game.mapH) return 0;
     let tt = game.map[ty * game.mapW + tx];
     if (tt === 2) return -0.3; 
-    let h = Math.sin(tx * 0.5) + Math.cos(ty * 0.5);
-    return Math.round(h) * 0.2; 
+    let h = Math.sin(tx * 0.4) + Math.cos(ty * 0.4);
+    return Math.round(h) * 0.25; 
 }
 
+// Map Initialization
 for (let y = 0; y < game.mapH; y++) {
     for (let x = 0; x < game.mapW; x++) {
-        if (x >= 12 && x <= 14 && y >= 14 && y <= 16) game.map.push(2);
-        else if (x >= 5 && x <= 8 && y >= 5 && y <= 8) game.map.push(1);
+        if (x >= 14 && x <= 16 && y >= 14 && y <= 16) game.map.push(2);
+        else if (x >= 4 && x <= 7 && y >= 4 && y <= 7) game.map.push(1);
         else {
             game.map.push(0);
-            if (Math.random() < 0.15) game.grassTufts.push({ x: x + 0.3 + Math.random()*0.4, z: y + 0.3 + Math.random()*0.4 });
+            if (Math.random() < 0.2) game.grassTufts.push({ x: x + 0.2 + Math.random()*0.6, z: y + 0.2 + Math.random()*0.6 });
         }
     }
 }
 
-const propTypes = ['tree', 'tree', 'tree', 'rock', 'bush', 'metal', 'ruin_wall', 'vehicle', 'house'];
-for (let i = 0; i < 20; i++) {
+const propTypes = ['tree', 'tree', 'tree', 'rock', 'bush', 'metal', 'ruin_wall'];
+for (let i = 0; i < 24; i++) {
     while (true) {
-        let tx = Math.floor(Math.random() * 18) + 1;
-        let ty = Math.floor(Math.random() * 18) + 1;
+        let tx = Math.floor(Math.random() * 20) + 1;
+        let ty = Math.floor(Math.random() * 20) + 1;
         if (game.map[ty*game.mapW+tx] === 0 && !game.obstacles.includes(`${tx},${ty}`)) {
-            game.entities.push({ type: propTypes[Math.floor(Math.random()*propTypes.length)], tx, ty, swayPhase: Math.random() });
+            game.entities.push({ type: propTypes[Math.floor(Math.random()*propTypes.length)], tx, ty, swayPhase: Math.random() * 6 });
             game.obstacles.push(`${tx},${ty}`);
             break;
         }
@@ -156,21 +157,20 @@ function findPath(start, end) {
     return [];
 }
 
+// Projections & Camera Vectors
 const p = game.player;
 const camInit = [p.x - 10, 12, p.z - 10];
 let dx = p.x - camInit[0], dz = p.z - camInit[2], dy = 0 - camInit[1];
 const GAME_YAW = Math.atan2(dx, dz);
 const distXZ = Math.hypot(dx, dz);
 const GAME_PITCH = Math.atan2(dy, distXZ);
-const FOV = 900;
+const FOV = 950;
 
 const SIN_YAW = Math.sin(-GAME_YAW), COS_YAW = Math.cos(-GAME_YAW);
 const SIN_PITCH = Math.sin(GAME_PITCH), COS_PITCH = Math.cos(GAME_PITCH);
 
 const W_VEC = [Math.sin(GAME_YAW), Math.cos(GAME_YAW)];
-const S_VEC = [-Math.sin(GAME_YAW), -Math.cos(GAME_YAW)];
 const D_VEC = [Math.cos(GAME_YAW), -Math.sin(GAME_YAW)];
-const A_VEC = [-Math.cos(GAME_YAW), Math.sin(GAME_YAW)];
 
 function project(x, y, z, cam) {
     x -= cam[0]; y -= cam[1]; z -= cam[2];
@@ -190,7 +190,7 @@ function getLightAt(x, y, z) {
         let d = Math.hypot(x - l.x, y - l.y, z - l.z);
         if (d < l.r) light += (1 - d / l.r) * l.intensity;
     }
-    return Math.min(0.8, light);
+    return Math.min(0.85, light);
 }
 
 function shade(color, factor, x, y, z) {
@@ -215,20 +215,19 @@ function addCube(faces, px, py, pz, w, h, d, color, rx=0, ry=0, ox=0, oy=0, oz=0
     faces.push({ verts: [rv[4], rv[5], rv[6], rv[7]], color: shade(color, 1.0, cx, cy+0.5, cz) });
     faces.push({ verts: [rv[3], rv[2], rv[6], rv[7]], color: shade(color, 0.8, cx, cy, cz+0.5) });
     faces.push({ verts: [rv[1], rv[0], rv[4], rv[5]], color: shade(color, 0.65, cx, cy, cz-0.5) });
-    faces.push({ verts: [rv[0], rv[3], rv[7], rv[4]], color: shade(color, 0.5, cx-0.5, cy, cz) });
-    faces.push({ verts: [rv[2], rv[1], rv[5], rv[6]], color: shade(color, 0.5, cx+0.5, cy, cz) });
+    faces.push({ verts: [rv[0], rv[3], rv[7], rv[4]], color: shade(color, 0.55, cx-0.5, cy, cz) });
+    faces.push({ verts: [rv[2], rv[1], rv[5], rv[6]], color: shade(color, 0.55, cx+0.5, cy, cz) });
 }
 
 function addDiamondGrass(faces, px, pz, sway) {
-    let c = [80, 200, 95];
+    let c = [74, 93, 35];
     faces.push({ verts: [[px-0.05, 0, pz], [px+0.05, 0, pz], [px+sway, 0.4, pz], [px+sway-0.1, 0.4, pz]], color: shade(c, 1.0, px, 0.2, pz) });
     faces.push({ verts: [[px-0.05, 0, pz], [px+0.05, 0, pz], [px-0.3+sway, 0.35, pz+0.2], [px-0.4+sway, 0.35, pz+0.2]], color: shade(c, 0.8, px, 0.2, pz) });
-    faces.push({ verts: [[px-0.05, 0, pz], [px+0.05, 0, pz], [px+0.3+sway, 0.35, pz-0.2], [px+0.4+sway, 0.35, pz-0.2]], color: shade(c, 0.8, px, 0.2, pz) });
 }
 
-function addShadow(faces, px, pz, r, op=70) {
+function addShadow(faces, px, pz, r, op=80) {
     let nf = game.ambientLight;
-    faces.push({ verts: [[px-r, 0.01, pz-r], [px+r, 0.01, pz-r], [px+r, 0.01, pz+r], [px-r, 0.01, pz+r]], color: `rgba(20,20,20,${(op/255)*nf})` });
+    faces.push({ verts: [[px-r, 0.01, pz-r], [px+r, 0.01, pz-r], [px+r, 0.01, pz+r], [px-r, 0.01, pz+r]], color: `rgba(18,24,9,${(op/255)*nf})` });
 }
 
 function handleMoveClick(mx, my) {
@@ -243,7 +242,7 @@ function handleMoveClick(mx, my) {
             }
         }
     }
-    if (closestTx !== -1 && minDist < 80) {
+    if (closestTx !== -1 && minDist < 90) {
         let selectedItem = game.hotbar[game.selectedSlot];
         if ((selectedItem === 'Torch' || selectedItem === 'Campfire') && game.inventory[selectedItem] > 0) {
             if (isWalkable(closestTx, closestTy)) {
@@ -297,21 +296,37 @@ function handleBreak() {
     }
 }
 
+// Ergonomic Mobile Controls Placement
 function getButtons() {
-    let btnSize = 80;
-    let bx = GAME_W - 60;
+    let scale = Math.min(GAME_W / 1280, GAME_H / 720);
+    scale = Math.max(0.75, Math.min(scale, 1.3));
+
+    let btnBreakSize = 84 * scale;
+    let btnSmallSize = 68 * scale;
+    let padding = 24 * scale;
+
+    let baseRight = GAME_W - padding - btnBreakSize/2;
+    let baseBottom = GAME_H - padding - btnBreakSize/2;
+
     return {
-        break: { x: bx, y: GAME_H - 120, r: btnSize / 2 },
-        jump: { x: bx - 90, y: GAME_H - 140, r: (btnSize - 20) / 2 },
-        craft: { x: bx, y: GAME_H - 210, r: btnSize / 2 },
-        inv: { x: bx, y: GAME_H - 300, r: btnSize / 2 }
+        break: { x: baseRight, y: baseBottom, r: btnBreakSize / 2 },
+        jump: { x: baseRight - (95 * scale), y: baseBottom - (20 * scale), r: btnSmallSize / 2 },
+        craft: { x: baseRight - (15 * scale), y: baseBottom - (95 * scale), r: btnSmallSize / 2 },
+        inv: { x: baseRight - (85 * scale), y: baseBottom - (105 * scale), r: btnSmallSize / 2 },
+        scale: scale
     };
 }
 
+// Touch & Pointer Controls
 canvas.addEventListener('pointerdown', e => {
     e.preventDefault();
     let x = e.clientX, y = e.clientY;
-    if (game.state === 'menu') { game.state = 'playing'; return; }
+    
+    if (game.state === 'menu') { 
+        game.state = 'playing'; 
+        return; 
+    }
+
     if (game.state === 'crafting' || game.state === 'inventory') {
         if (game.state === 'crafting') {
             for (let btn of game.craftSlots) {
@@ -327,14 +342,17 @@ canvas.addEventListener('pointerdown', e => {
                 }
             }
         }
-        game.state = 'playing'; return;
+        game.state = 'playing'; 
+        return;
     }
-    if (game.state !== 'playing') return;
 
-    let hbSize = 60;
+    // Hotbar Selection
+    let btns = getButtons();
+    let hbSize = Math.floor(58 * btns.scale);
     let totalW = 5 * hbSize;
     let hbStartX = (GAME_W / 2) - (totalW / 2);
-    let hbY = GAME_H - 70;
+    let hbY = GAME_H - hbSize - (16 * btns.scale);
+
     if (y > hbY && y < hbY + hbSize) {
         for (let i = 0; i < 5; i++) {
             if (x > hbStartX + i*hbSize && x < hbStartX + i*hbSize + hbSize) {
@@ -344,8 +362,8 @@ canvas.addEventListener('pointerdown', e => {
         }
     }
 
-    let btns = getButtons();
-    if (x > GAME_W - 200) {
+    // Action Buttons
+    if (x > GAME_W - 260 * btns.scale) {
         if (Math.hypot(x - btns.break.x, y - btns.break.y) < btns.break.r) { handleBreak(); return; }
         if (Math.hypot(x - btns.jump.x, y - btns.jump.y) < btns.jump.r) { if (game.player.jumpY === 0) game.player.jumpY = 0.6; return; }
         if (Math.hypot(x - btns.craft.x, y - btns.craft.y) < btns.craft.r) { game.state = 'crafting'; return; }
@@ -355,6 +373,7 @@ canvas.addEventListener('pointerdown', e => {
     let selectedItem = game.hotbar[game.selectedSlot];
     let isPlacing = (selectedItem === 'Torch' || selectedItem === 'Campfire') && game.inventory[selectedItem] > 0;
 
+    // Dynamic Touch Joystick
     if (!isPlacing && x < GAME_W / 2) {
         game.joy.active = true;
         game.joy.x = x; game.joy.y = y;
@@ -370,7 +389,8 @@ canvas.addEventListener('pointermove', e => {
         let dx = e.clientX - game.joy.x;
         let dy = e.clientY - game.joy.y;
         let dist = Math.hypot(dx, dy);
-        if (dist > 50) { dx = (dx / dist) * 50; dy = (dy / dist) * 50; }
+        let maxDist = 50 * (getButtons().scale);
+        if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
         game.joy.dx = dx; game.joy.dy = dy;
     }
 });
@@ -390,33 +410,14 @@ window.addEventListener('keydown', e => {
 });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-function saveGame() { localStorage.setItem('save', JSON.stringify({ player: game.player, inventory: game.inventory, timeOfDay: game.timeOfDay, entities: game.entities, lights: game.lights, obstacles: game.obstacles })); }
-function loadGame() {
-    let data = localStorage.getItem('save');
-    if (data) {
-        let p = JSON.parse(data);
-        Object.assign(game.player, p.player);
-        Object.assign(game.inventory, p.inventory);
-        game.timeOfDay = p.timeOfDay;
-        game.entities = p.entities;
-        game.lights = p.lights || [];
-        game.obstacles = p.obstacles || [];
-        if (game.obstacles.length === 0) {
-            game.entities.forEach(e => game.obstacles.push(`${e.tx},${e.ty}`));
-            game.map.forEach((t, i) => { if (t === 2) game.obstacles.push(`${i % game.mapW},${Math.floor(i / game.mapW)}`); });
-        }
-    }
-}
-loadGame();
-
 let lastTime = performance.now();
 function update(dt) {
     game.frameCount++;
     if (game.state !== 'playing') return;
     
-    game.timeOfDay = (game.timeOfDay + dt * 0.01) % 1.0;
+    game.timeOfDay = (game.timeOfDay + dt * 0.008) % 1.0;
     let lv = Math.sin(game.timeOfDay * Math.PI * 2 - Math.PI / 2);
-    game.ambientLight = 0.3 + (lv + 1) / 2 * 0.7;
+    game.ambientLight = 0.35 + (lv + 1) / 2 * 0.65;
 
     let p = game.player;
     if (p.jumpY > 0) { p.jumpY -= dt * 1.5; if (p.jumpY < 0) p.jumpY = 0; }
@@ -426,17 +427,18 @@ function update(dt) {
     while (ad < -Math.PI) ad += 2 * Math.PI;
     p.angle += ad * Math.min(1.0, dt * 10.0);
 
-    let isMovingJoy = game.joy.active && (Math.abs(game.joy.dx) > 5 || Math.abs(game.joy.dy) > 5);
+    let isMovingJoy = game.joy.active && (Math.abs(game.joy.dx) > 4 || Math.abs(game.joy.dy) > 4);
     if (isMovingJoy) {
         p.path = []; game.pendingInteraction = null; game.destinationMarker = null;
-        let inputX = game.joy.dx / 50;
-        let inputY = -game.joy.dy / 50;
+        let joyScale = 50 * getButtons().scale;
+        let inputX = game.joy.dx / joyScale;
+        let inputY = -game.joy.dy / joyScale;
         let moveX = inputX * D_VEC[0] + inputY * W_VEC[0];
         let moveZ = inputX * D_VEC[1] + inputY * W_VEC[1];
         let mag = Math.hypot(moveX, moveZ);
         if (mag > 0) {
             moveX /= mag; moveZ /= mag;
-            let speed = 5.0 * dt;
+            let speed = 4.8 * dt;
             let nx = p.x + moveX * speed, nz = p.z + moveZ * speed;
             let targetTx = Math.floor(nx), targetTy = Math.floor(nz);
             let currentH = getHeight(p.tx, p.ty);
@@ -455,7 +457,7 @@ function update(dt) {
         let tx = target[0] + 0.5, tz = target[1] + 0.5;
         let ddx = tx - p.x, ddz = tz - p.z, dist = Math.hypot(ddx, ddz);
         if (dist > 0.01) p.targetAngle = Math.atan2(ddx, ddz);
-        let speed = 5.0 * dt;
+        let speed = 4.8 * dt;
         if (dist <= speed) {
             p.x = tx; p.z = tz; p.tx = target[0]; p.ty = target[1]; p.path.shift();
             if (p.path.length === 0 && !game.pendingInteraction) { p.state = 'idle'; game.destinationMarker = null; }
@@ -466,14 +468,14 @@ function update(dt) {
             p.state = 'gather';
             let ddx = (e.tx+0.5) - p.x, ddz = (e.ty+0.5) - p.z;
             p.targetAngle = Math.atan2(ddx, ddz);
-            if (!p.gatherTimer) p.gatherTimer = 1.2;
+            if (!p.gatherTimer) p.gatherTimer = 1.0;
             p.gatherTimer -= dt;
             if (p.gatherTimer <= 0) {
                 if (e.type === 'tree') { game.inventory.Wood++; game.feedbackTexts.push({text:'+1 Wood', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
                 else if (e.type === 'rock') { game.inventory.Stone++; game.feedbackTexts.push({text:'+1 Stone', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
-                else if (['metal','vehicle'].includes(e.type)) { game.inventory.Metal++; game.feedbackTexts.push({text:'+1 Metal', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                else if (e.type === 'metal') { game.inventory.Metal++; game.feedbackTexts.push({text:'+1 Metal', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
                 else if (e.type === 'bush') { game.inventory.Fiber++; game.feedbackTexts.push({text:'+1 Fiber', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
-                else if (['ruin_wall','house'].includes(e.type)) { game.inventory.Stone+=2; game.feedbackTexts.push({text:'+2 Stone', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                else if (e.type === 'ruin_wall') { game.inventory.Stone+=2; game.feedbackTexts.push({text:'+2 Stone', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
                 game.entities.splice(game.entities.indexOf(e), 1);
                 game.obstacles.splice(game.obstacles.indexOf(`${e.tx},${e.ty}`), 1);
                 game.pendingInteraction = null; p.state = 'idle'; game.destinationMarker = null;
@@ -486,39 +488,39 @@ function update(dt) {
     let targetY = terrainY + p.jumpY;
     p.y += (targetY - p.y) * Math.min(1, dt * 15);
 
-    game.lights.forEach(l => { l.intensity = (l.baseIntensity || 1) + Math.sin(game.frameCount * 0.5 + l.x) * 0.1; });
-    game.feedbackTexts.forEach(ft => { ft.y -= 20 * dt; ft.timer -= dt; });
+    game.lights.forEach(l => { l.intensity = (l.baseIntensity || 1) + Math.sin(game.frameCount * 0.4 + l.x) * 0.08; });
+    game.feedbackTexts.forEach(ft => { ft.y -= 22 * dt; ft.timer -= dt; });
     game.feedbackTexts = game.feedbackTexts.filter(ft => ft.timer > 0);
 }
 
 function render() {
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = '#121809';
     ctx.fillRect(0, 0, GAME_W, GAME_H);
 
+    let btns = getButtons();
+
+    // Start Screen Menu
     if (game.state === 'menu') {
-        // Draw Main Menu Frame
-        let frameW = GAME_W * 0.8;
-        let frameH = frameW * (120 / 160); // 4:3 aspect ratio
+        let frameW = Math.min(GAME_W * 0.85, 480);
+        let frameH = frameW * (120 / 160);
         let frameX = (GAME_W - frameW) / 2;
         let frameY = (GAME_H - frameH) / 2;
         drawUIRect('ui_main_menu_frame', frameX, frameY, frameW, frameH);
         
-        // Draw Title Text
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 48px Arial';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '900 24px "Courier New", monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('THE LAST WANDERER', GAME_W/2, frameY + frameH * 0.25);
+        ctx.fillText('THE LAST WANDERER', GAME_W/2, frameY + frameH * 0.28);
         
-        // Draw Start Button
-        let btnW = frameW * 0.5;
-        let btnH = btnW * (40 / 120); // 3:1 aspect ratio
+        let btnW = frameW * 0.6;
+        let btnH = btnW * (40 / 120);
         let btnX = (GAME_W - btnW) / 2;
-        let btnY = frameY + frameH * 0.5;
+        let btnY = frameY + frameH * 0.52;
         drawUIRect('menu_button_start', btnX, btnY, btnW, btnH);
         
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 24px Arial';
-        ctx.fillText("START", GAME_W/2, btnY + btnH * 0.65);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '900 16px "Courier New", monospace';
+        ctx.fillText("TAP TO START", GAME_W/2, btnY + btnH * 0.62);
         return;
     }
 
@@ -526,10 +528,11 @@ function render() {
     let cam = [p.x - 10, 12, p.z - 10];
     let faces = [];
 
+    // Terrain Rendering
     for (let ty = 0; ty < game.mapH; ty++) {
         for (let tx = 0; tx < game.mapW; tx++) {
             let tt = game.map[ty*game.mapW+tx];
-            let c = tt === 0 ? [60,180,75] : tt === 1 ? [128,102,51] : [51,102,179];
+            let c = tt === 0 ? [74, 93, 35] : tt === 1 ? [110, 90, 50] : [45, 80, 110];
             let h = getHeight(tx, ty);
             faces.push({ verts: [[tx, h, ty], [tx+1, h, ty], [tx+1, h, ty+1], [tx, h, ty+1]], color: shade(c, 1.0, tx+0.5, h, ty+0.5) });
             let hL = getHeight(tx-1, ty);
@@ -543,48 +546,51 @@ function render() {
         }
     }
 
-    game.grassTufts.forEach(t => { let s = Math.sin(game.frameCount * 0.05 + t.x) * 0.1; addDiamondGrass(faces, t.x, t.z, s); });
+    game.grassTufts.forEach(t => { let s = Math.sin(game.frameCount * 0.04 + t.x) * 0.08; addDiamondGrass(faces, t.x, t.z, s); });
 
     if (game.destinationMarker) {
         let tx = game.destinationMarker.tx, ty = game.destinationMarker.ty;
-        let c = game.map[ty*game.mapW+tx] === 0 ? [60,180,75] : [128,102,51];
-        let lc = [Math.min(255, c[0]+64), Math.min(255, c[1]+64), Math.min(255, c[2]+64)];
         let h = getHeight(tx, ty) + 0.02;
-        faces.push({ verts: [[tx+0.1,h,ty+0.1], [tx+0.9,h,ty+0.1], [tx+0.9,h,ty+0.9], [tx+0.1,h,ty+0.9]], color: `rgba(${lc[0]},${lc[1]},${lc[2]},0.6)` });
+        faces.push({ verts: [[tx+0.1,h,ty+0.1], [tx+0.9,h,ty+0.1], [tx+0.9,h,ty+0.9], [tx+0.1,h,ty+0.9]], color: `rgba(162,209,91,0.6)` });
     }
 
+    // Entity Rendering
     game.entities.forEach(e => {
         let h = getHeight(e.tx, e.ty);
-        if (e.type === 'tree') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.8);
+        if (e.type === 'tree') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.7);
         else if (['rock','ruin_wall'].includes(e.type)) addShadow(faces, e.tx+0.5, e.ty+0.5, 0.6);
-        else if (['vehicle','house'].includes(e.type)) addShadow(faces, e.tx+0.5, e.ty+0.5, 1.0);
         else if (e.type !== 'torch' && e.type !== 'campfire') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.4);
-        if (e.type === 'tree') { let s = Math.sin(game.frameCount * 0.03 + e.swayPhase) * 0.1; addCube(faces, e.tx+0.5+s, h+1.5, e.ty+0.5, 1.2, 1.2, 1.2, [26,128,51]); addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.3, 1.0, 0.3, [102,51,26]); }
-        else if (e.type === 'rock') addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [128,128,128]);
-        else if (e.type === 'metal') addCube(faces, e.tx+0.5, h+0.2, e.ty+0.5, 0.9, 0.4, 0.9, [153,77,26]);
-        else if (e.type === 'bush') { let s = Math.sin(game.frameCount * 0.05 + e.swayPhase) * 0.05; addCube(faces, e.tx+0.5+s, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [40,100,40]); }
-        else if (e.type === 'ruin_wall') addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.8, 1.0, 0.3, [110,100,90]);
-        else if (e.type === 'vehicle') { addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 1.5, 0.4, 0.8, [130,70,30]); addCube(faces, e.tx+0.5, h+0.8, e.ty+0.5, 0.8, 0.4, 0.8, [140,80,30]); }
-        else if (e.type === 'house') { addCube(faces, e.tx+0.5, h+0.6, e.ty+0.5, 1.8, 1.2, 1.8, [100,90,80]); addCube(faces, e.tx+0.5, h+1.3, e.ty+0.5, 2.0, 0.2, 2.0, [80,50,40]); }
-        else if (e.type === 'torch') { addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.1, 1.0, 0.1, [100,60,30]); addCube(faces, e.tx+0.5, h+1.0, e.ty+0.5, 0.25, 0.25, 0.25, [255, 200, 0]); }
-        else if (e.type === 'campfire') { addCube(faces, e.tx+0.2, h+0.1, e.ty+0.5, 0.3, 0.2, 0.3, [128,128,128]); addCube(faces, e.tx+0.8, h+0.1, e.ty+0.5, 0.3, 0.2, 0.3, [128,128,128]); addCube(faces, e.tx+0.5, h+0.1, e.ty+0.2, 0.3, 0.2, 0.3, [128,128,128]); addCube(faces, e.tx+0.5, h+0.1, e.ty+0.8, 0.3, 0.2, 0.3, [128,128,128]); addCube(faces, e.tx+0.5, h+0.4, e.ty+0.5, 0.6, 0.2, 0.2, [150, 80, 30]); addCube(faces, e.tx+0.5, h+0.6, e.ty+0.5, 0.4, 0.3, 0.4, [255, 150, 0]); }
+        
+        if (e.type === 'tree') { 
+            let s = Math.sin(game.frameCount * 0.03 + e.swayPhase) * 0.08; 
+            addCube(faces, e.tx+0.5+s, h+1.5, e.ty+0.5, 1.2, 1.2, 1.2, [58, 85, 30]); 
+            addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.3, 1.0, 0.3, [92, 64, 51]); 
+        }
+        else if (e.type === 'rock') addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [128, 128, 128]);
+        else if (e.type === 'metal') addCube(faces, e.tx+0.5, h+0.2, e.ty+0.5, 0.9, 0.4, 0.9, [112, 112, 112]);
+        else if (e.type === 'bush') { let s = Math.sin(game.frameCount * 0.04 + e.swayPhase) * 0.04; addCube(faces, e.tx+0.5+s, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [85, 122, 43]); }
+        else if (e.type === 'ruin_wall') addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.8, 1.0, 0.3, [90, 85, 80]);
+        else if (e.type === 'torch') { addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.1, 1.0, 0.1, [92, 64, 51]); addCube(faces, e.tx+0.5, h+1.0, e.ty+0.5, 0.25, 0.25, 0.25, [255, 200, 0]); }
+        else if (e.type === 'campfire') { addCube(faces, e.tx+0.5, h+0.1, e.ty+0.5, 0.7, 0.15, 0.7, [80, 80, 80]); addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 0.4, 0.3, 0.4, [255, 140, 0]); }
     });
 
+    // Character Model
     let playerY = p.y;
-    addShadow(faces, p.x, p.z, 0.4, 70 * (1 - Math.min(1, p.jumpY / 0.6)));
-    let speedMul = 0.5;
+    addShadow(faces, p.x, p.z, 0.4, 80 * (1 - Math.min(1, p.jumpY / 0.6)));
     let breathe = 0, ls = 0, asr = 0, asl = 0;
-    if (p.state === 'walk') { ls = Math.sin(game.frameCount * 0.4 * speedMul) * 0.5; asr = -ls; asl = ls; breathe = Math.abs(Math.sin(game.frameCount * 0.4 * speedMul)) * 0.05; }
-    else if (p.state === 'gather') { asr = Math.sin(game.frameCount * 0.8 * speedMul) * 1.2; breathe = Math.sin(game.frameCount * 0.5 * speedMul) * 0.05; }
-    else { breathe = Math.sin(game.frameCount * 0.05 * speedMul) * 0.05; }
+    if (p.state === 'walk') { ls = Math.sin(game.frameCount * 0.35) * 0.45; asr = -ls; asl = ls; breathe = Math.abs(Math.sin(game.frameCount * 0.35)) * 0.04; }
+    else if (p.state === 'gather') { asr = Math.sin(game.frameCount * 0.7) * 1.1; breathe = Math.sin(game.frameCount * 0.4) * 0.04; }
+    else { breathe = Math.sin(game.frameCount * 0.05) * 0.04; }
+    
     let hipY = playerY + 0.5, torsoY = playerY + 0.8 + breathe, shoulderY = playerY + 1.1 + breathe, headY = playerY + 1.4 + breathe;
-    let ro = rotateY(0.15,0,0,p.angle); addCube(faces, p.x+ro[0], hipY, p.z+ro[2], 0.2, 0.5, 0.2, [50,50,50], -ls, p.angle, 0, -0.25, 0);
-    let lo = rotateY(-0.15,0,0,p.angle); addCube(faces, p.x+lo[0], hipY, p.z+lo[2], 0.2, 0.5, 0.2, [50,50,50], ls, p.angle, 0, -0.25, 0);
-    addCube(faces, p.x, torsoY, p.z, 0.5, 0.6, 0.3, [51,102,204], 0, p.angle);
-    let rao = rotateY(0.35,0,0,p.angle); addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.2, 0.5, 0.2, [40,80,160], -asr, p.angle, 0, -0.25, 0);
-    let lao = rotateY(-0.35,0,0,p.angle); addCube(faces, p.x+lao[0], shoulderY, p.z+lao[2], 0.2, 0.5, 0.2, [40,80,160], -asl, p.angle, 0, -0.25, 0);
-    addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [230,179,128], 0, p.angle);
+    let ro = rotateY(0.15,0,0,p.angle); addCube(faces, p.x+ro[0], hipY, p.z+ro[2], 0.2, 0.5, 0.2, [34,43,20], -ls, p.angle, 0, -0.25, 0);
+    let lo = rotateY(-0.15,0,0,p.angle); addCube(faces, p.x+lo[0], hipY, p.z+lo[2], 0.2, 0.5, 0.2, [34,43,20], ls, p.angle, 0, -0.25, 0);
+    addCube(faces, p.x, torsoY, p.z, 0.5, 0.6, 0.3, [74,93,35], 0, p.angle);
+    let rao = rotateY(0.35,0,0,p.angle); addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.2, 0.5, 0.2, [136,176,75], -asr, p.angle, 0, -0.25, 0);
+    let lao = rotateY(-0.35,0,0,p.angle); addCube(faces, p.x+lao[0], shoulderY, p.z+lao[2], 0.2, 0.5, 0.2, [136,176,75], -asl, p.angle, 0, -0.25, 0);
+    addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [210,160,110], 0, p.angle);
 
+    // Rasterize Sorted Faces
     let renderables = [];
     faces.forEach(f => {
         let pv = []; let valid = true;
@@ -594,37 +600,30 @@ function render() {
     renderables.sort((a,b) => b.z - a.z);
     renderables.forEach(r => { ctx.beginPath(); ctx.moveTo(r.verts[0][0], r.verts[0][1]); for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]); ctx.closePath(); ctx.fillStyle = r.color; ctx.fill(); });
 
-    // --- 2D UI ---
-    ctx.textAlign = 'left'; ctx.font = '22px Arial'; ctx.fillStyle = 'white';
-    let invY = 20;
-    Object.keys(game.inventory).forEach(item => { if (game.inventory[item] > 0 || ['Wood','Stone','Metal','Fiber'].includes(item)) { ctx.fillText(`${item}: ${game.inventory[item]}`, 20, invY); invY += 30; } });
-    let tStr = game.ambientLight < 0.5 ? "Night" : "Day";
-    ctx.textAlign = 'right'; ctx.fillText(`Time: ${tStr}`, GAME_W - 20, 40);
-    
-    // Feedback Banners
+    // Floating Pickup Text Banners
     game.feedbackTexts.forEach(ft => {
         ctx.globalAlpha = Math.max(0, ft.timer / 2.0);
-        let bw = 140, bh = 32;
+        let bw = 130 * btns.scale, bh = 30 * btns.scale;
         drawUIRect('feedback_banner', ft.x - bw/2, ft.y - bh/2, bw, bh);
         ctx.fillStyle = '#A2D15B';
-        ctx.font = 'bold 16px Arial';
+        ctx.font = `900 ${Math.floor(13 * btns.scale)}px "Courier New", monospace`;
         ctx.textAlign = 'center';
-        ctx.fillText(ft.text, ft.x, ft.y + 6);
+        ctx.fillText(ft.text, ft.x, ft.y + 5);
     });
     ctx.globalAlpha = 1.0;
 
-    // --- Hotbar ---
-    let hbSize = 60;
+    // Centered Hotbar
+    let hbSize = Math.floor(58 * btns.scale);
     let totalW = 5 * hbSize;
     let hbStartX = (GAME_W / 2) - (totalW / 2);
-    let hbY = GAME_H - 70;
+    let hbY = GAME_H - hbSize - (16 * btns.scale);
     for (let i = 0; i < 5; i++) {
         let hx = hbStartX + i * hbSize;
         drawUIImage('hotbar_slot', hx + hbSize/2, hbY + hbSize/2, hbSize);
         
         let itemName = game.hotbar[i];
         if (itemName !== 'Hands' && game.inventory[itemName] > 0) {
-            drawUIImage('item_' + itemName.toLowerCase(), hx + hbSize/2, hbY + hbSize/2, hbSize * 0.8);
+            drawUIImage('item_' + itemName.toLowerCase(), hx + hbSize/2, hbY + hbSize/2, hbSize * 0.75);
         }
         
         if (game.selectedSlot === i) {
@@ -633,93 +632,95 @@ function render() {
         
         let count = game.inventory[itemName];
         if (count !== undefined && count > 0) {
-            ctx.fillStyle = 'white'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'right';
-            ctx.fillText(count, hx + hbSize - 5, hbY + 18);
+            ctx.fillStyle = '#FFFFFF'; 
+            ctx.font = `900 ${Math.floor(11 * btns.scale)}px "Courier New", monospace`; 
+            ctx.textAlign = 'right';
+            ctx.fillText(count, hx + hbSize - 6, hbY + 16);
         }
     }
 
-    // --- Touch Controls ---
+    // Touch Action Buttons
     if (game.state === 'playing') {
-        let btns = getButtons();
-        
-        let jx = game.joy.active ? game.joy.x : 120;
-        let jy = game.joy.active ? game.joy.y : GAME_H - 140;
-        ctx.globalAlpha = game.joy.active ? 1.0 : 0.3;
-        drawUIImage('joystick_base', jx, jy, 120);
+        let jx = game.joy.active ? game.joy.x : 100 * btns.scale;
+        let jy = game.joy.active ? game.joy.y : GAME_H - (110 * btns.scale);
+        ctx.globalAlpha = game.joy.active ? 0.95 : 0.45;
+        drawUIImage('joystick_base', jx, jy, 110 * btns.scale);
         if (game.joy.active) {
-            drawUIImage('joystick_knob', jx + game.joy.dx, jy + game.joy.dy, 50);
+            drawUIImage('joystick_knob', jx + game.joy.dx, jy + game.joy.dy, 48 * btns.scale);
         }
         ctx.globalAlpha = 1.0;
 
-        drawUIImage('btn_break', btns.break.x, btns.break.y, 80);
-        drawUIImage('btn_jump', btns.jump.x, btns.jump.y, 70);
-        drawUIImage('btn_craft', btns.craft.x, btns.craft.y, 80);
-        drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, 80);
+        drawUIImage('btn_break', btns.break.x, btns.break.y, btns.break.r * 2);
+        drawUIImage('btn_jump', btns.jump.x, btns.jump.y, btns.jump.r * 2);
+        drawUIImage('btn_craft', btns.craft.x, btns.craft.y, btns.craft.r * 2);
+        drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, btns.inv.r * 2);
     }
 
-    // --- Menus ---
+    // Modal Overlays
     if (game.state === 'crafting' || game.state === 'inventory') {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillStyle = 'rgba(18,24,9,0.75)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
         
-        let winW = 600, winH = 400;
-        if (winW > GAME_W * 0.9) { winW = GAME_W * 0.9; winH = winW * 0.66; }
+        let winW = Math.min(GAME_W * 0.85, 460);
+        let winH = winW * (80 / 120);
         let winX = (GAME_W / 2) - (winW / 2);
         let winY = (GAME_H / 2) - (winH / 2);
         
         drawUIRect('ui_window', winX, winY, winW, winH);
         
-        ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.font = 'bold 24px Arial';
-        ctx.fillText(game.state.toUpperCase(), GAME_W/2, winY + 40);
+        ctx.fillStyle = '#FFFFFF'; 
+        ctx.textAlign = 'center'; 
+        ctx.font = '900 16px "Courier New", monospace';
+        ctx.fillText(game.state.toUpperCase(), GAME_W/2, winY + 22);
 
+        // Inventory Popup Grid
         if (game.state === 'inventory') {
             let items = Object.keys(game.inventory);
             let cols = 4;
-            let boxW = 80, boxH = 80;
+            let boxW = winW / 5.2;
             let startX = GAME_W/2 - (cols * boxW) / 2;
-            let startY = winY + 80;
+            let startY = winY + 45;
             for(let i=0; i<items.length; i++) {
                 let col = i % cols;
                 let row = Math.floor(i / cols);
                 let ix = startX + col * boxW;
-                let iy = startY + row * boxH;
+                let iy = startY + row * boxW;
                 
-                drawUIImage('inventory_slot', ix + (boxW-10)/2, iy + (boxH-10)/2, boxW-10);
+                drawUIImage('inventory_slot', ix + boxW/2, iy + boxW/2, boxW * 0.9);
                 
                 let itemName = items[i];
                 if(game.inventory[itemName] > 0 || ['Wood','Stone','Metal','Fiber'].includes(itemName)) {
-                    drawUIImage('item_' + itemName.toLowerCase(), ix + (boxW-10)/2, iy + (boxH-10)/2, (boxW-10) * 0.8);
+                    drawUIImage('item_' + itemName.toLowerCase(), ix + boxW/2, iy + boxW/2, boxW * 0.7);
                     
-                    ctx.fillStyle = 'white'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'right';
-                    ctx.fillText(game.inventory[itemName], ix + boxW - 15, iy + boxH - 15);
+                    ctx.fillStyle = '#FFFFFF'; 
+                    ctx.font = '900 11px "Courier New", monospace'; 
+                    ctx.textAlign = 'right';
+                    ctx.fillText(game.inventory[itemName], ix + boxW - 8, iy + boxW - 8);
                 }
             }
         }
 
+        // Crafting Menu List
         if (game.state === 'crafting') {
             game.craftSlots = [];
-            let rx = GAME_W/2, ry = winY + 80;
-            ctx.font = '20px Arial';
-            ctx.fillStyle = 'white';
-            ctx.fillText('Recipes (Tap to Craft)', rx, ry - 20);
+            let rx = GAME_W/2, ry = winY + 42;
+            let rowW = winW * 0.82, rowH = 26;
             
             game.recipes.forEach((rec, i) => {
-                let sx = rx - 180, sy = ry + i * 50;
-                let rowW = 360, rowH = 40;
+                let sx = rx - rowW/2, sy = ry + i * (rowH + 6);
                 
                 drawUIRect('recipe_row', sx, sy, rowW, rowH);
+                drawUIImage('item_' + rec.result.toLowerCase(), sx + 14, sy + rowH/2, 20);
                 
-                // Draw Item Icon inside the row
-                drawUIImage('item_' + rec.result.toLowerCase(), sx + 18, sy + rowH/2, 28);
+                ctx.textAlign = 'left'; 
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = '900 11px "Courier New", monospace';
+                ctx.fillText(rec.name, sx + 32, sy + 13);
                 
-                ctx.textAlign = 'left'; ctx.fillStyle = 'white';
-                ctx.font = 'bold 14px Arial';
-                ctx.fillText(rec.name, sx + 45, sy + 18);
-                
-                let costStr = Object.keys(rec.cost).map(r => `${r}:${rec.cost[r]}`).join(' | ');
+                let costStr = Object.keys(rec.cost).map(r => `${r}:${rec.cost[r]}`).join(' ');
                 ctx.fillStyle = '#88B04B';
-                ctx.font = '10px Arial';
-                ctx.fillText(`COST: ${costStr}`, sx + 45, sy + 32);
+                ctx.font = '900 9px "Courier New", monospace';
+                ctx.fillText(costStr, sx + 32, sy + 22);
                 
                 game.craftSlots.push({ recipe: rec, x: sx, y: sy, w: rowW, h: rowH });
             });
