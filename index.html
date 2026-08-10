@@ -6,8 +6,36 @@
     <title>The Last Wanderer 3D</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
-        canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            width: 100dvw;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: #0d1207;
+            font-family: 'Courier New', Courier, monospace;
+            touch-action: none;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            width: 100dvw;
+            height: 100dvh;
+            touch-action: none;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
     </style>
 </head>
 <body>
