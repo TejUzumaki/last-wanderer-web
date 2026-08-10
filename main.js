@@ -16,6 +16,20 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// --- UI Asset Loader ---
+const uiAssets = {};
+const assetList = ['joystick_base', 'joystick_knob', 'btn_break', 'btn_jump', 'btn_craft', 'btn_inventory', 'hotbar_slot', 'ui_window'];
+assetList.forEach(name => {
+    uiAssets[name] = new Image();
+    uiAssets[name].src = `assets/ui/${name}.png`;
+});
+
+function drawUIImage(imgName, x, y, size) {
+    if (uiAssets[imgName] && uiAssets[imgName].complete) {
+        ctx.drawImage(uiAssets[imgName], x - size/2, y - size/2, size, size);
+    }
+}
+
 // --- Game State ---
 const game = {
     mapW: 20, mapH: 20, map: [], obstacles: [], entities: [], grassTufts: [], lights: [],
@@ -133,7 +147,6 @@ function getLightAt(x, y, z) {
     let light = 0;
     let pD = Math.hypot(x - p.x, y - (p.y + 1), z - p.z);
     if (pD < 4) light += (1 - pD / 4) * 0.4;
-    
     for (let l of game.lights) {
         let d = Math.hypot(x - l.x, y - l.y, z - l.z);
         if (d < l.r) light += (1 - d / l.r) * l.intensity;
@@ -193,7 +206,6 @@ function handleMoveClick(mx, my) {
     }
     if (closestTx !== -1 && minDist < 80) {
         let selectedItem = game.hotbar[game.selectedSlot];
-        
         if ((selectedItem === 'Torch' || selectedItem === 'Campfire') && game.inventory[selectedItem] > 0) {
             if (isWalkable(closestTx, closestTy)) {
                 game.inventory[selectedItem]--;
@@ -246,14 +258,14 @@ function handleBreak() {
     }
 }
 
-// UI Button Coordinates
 function getButtons() {
-    let bx = GAME_W - 70;
+    let btnSize = 90;
+    let bx = GAME_W - 60;
     return {
-        break: { x: bx, y: GAME_H - 100, r: 40 },
-        jump: { x: bx - 90, y: GAME_H - 140, r: 35 },
-        craft: { x: bx, y: GAME_H - 190, r: 35 },
-        inv: { x: bx, y: GAME_H - 280, r: 35 }
+        break: { x: bx, y: GAME_H - 120, r: btnSize / 2 },
+        jump: { x: bx - 100, y: GAME_H - 150, r: (btnSize - 20) / 2 },
+        craft: { x: bx, y: GAME_H - 220, r: btnSize / 2 },
+        inv: { x: bx, y: GAME_H - 320, r: btnSize / 2 }
     };
 }
 
@@ -281,11 +293,13 @@ canvas.addEventListener('pointerdown', e => {
     if (game.state !== 'playing') return;
 
     // Hotbar Selection
-    let hbY = GAME_H - 60;
-    let hbStartX = GAME_W / 2 - 125;
-    if (y > hbY && y < hbY + 50) {
+    let hbSize = 60;
+    let totalW = 5 * hbSize;
+    let hbStartX = (GAME_W / 2) - (totalW / 2);
+    let hbY = GAME_H - 70;
+    if (y > hbY && y < hbY + hbSize) {
         for (let i = 0; i < 5; i++) {
-            if (x > hbStartX + i*50 && x < hbStartX + i*50 + 50) {
+            if (x > hbStartX + i*hbSize && x < hbStartX + i*hbSize + hbSize) {
                 game.selectedSlot = i;
                 return;
             }
@@ -304,7 +318,6 @@ canvas.addEventListener('pointerdown', e => {
     let selectedItem = game.hotbar[game.selectedSlot];
     let isPlacing = (selectedItem === 'Torch' || selectedItem === 'Campfire') && game.inventory[selectedItem] > 0;
 
-    // If placing, allow tap anywhere. Otherwise, left side is joystick.
     if (!isPlacing && x < GAME_W / 2) {
         game.joy.active = true;
         game.joy.x = x; game.joy.y = y;
@@ -369,11 +382,7 @@ function update(dt) {
     game.ambientLight = 0.3 + (lv + 1) / 2 * 0.7;
 
     let p = game.player;
-    
-    if (p.jumpY > 0) {
-        p.jumpY -= dt * 1.5;
-        if (p.jumpY < 0) p.jumpY = 0;
-    }
+    if (p.jumpY > 0) { p.jumpY -= dt * 1.5; if (p.jumpY < 0) p.jumpY = 0; }
 
     let ad = p.targetAngle - p.angle;
     while (ad > Math.PI) ad -= 2 * Math.PI;
@@ -440,10 +449,7 @@ function update(dt) {
     let targetY = terrainY + p.jumpY;
     p.y += (targetY - p.y) * Math.min(1, dt * 15);
 
-    game.lights.forEach(l => {
-        l.intensity = (l.baseIntensity || 1) + Math.sin(game.frameCount * 0.5 + l.x) * 0.1;
-    });
-
+    game.lights.forEach(l => { l.intensity = (l.baseIntensity || 1) + Math.sin(game.frameCount * 0.5 + l.x) * 0.1; });
     game.feedbackTexts.forEach(ft => { ft.y -= 20 * dt; ft.timer -= dt; });
     game.feedbackTexts = game.feedbackTexts.filter(ft => ft.timer > 0);
 }
@@ -472,9 +478,7 @@ function render() {
             let tt = game.map[ty*game.mapW+tx];
             let c = tt === 0 ? [60,180,75] : tt === 1 ? [128,102,51] : [51,102,179];
             let h = getHeight(tx, ty);
-            
             faces.push({ verts: [[tx, h, ty], [tx+1, h, ty], [tx+1, h, ty+1], [tx, h, ty+1]], color: shade(c, 1.0, tx+0.5, h, ty+0.5) });
-            
             let hL = getHeight(tx-1, ty);
             if (h < hL) faces.push({ verts: [[tx, h, ty], [tx, hL, ty], [tx, hL, ty+1], [tx, h, ty+1]], color: shade(c, 0.6, tx, (h+hL)/2, ty+0.5) });
             let hR = getHeight(tx+1, ty);
@@ -486,10 +490,7 @@ function render() {
         }
     }
 
-    game.grassTufts.forEach(t => {
-        let s = Math.sin(game.frameCount * 0.05 + t.x) * 0.1;
-        addDiamondGrass(faces, t.x, t.z, s);
-    });
+    game.grassTufts.forEach(t => { let s = Math.sin(game.frameCount * 0.05 + t.x) * 0.1; addDiamondGrass(faces, t.x, t.z, s); });
 
     if (game.destinationMarker) {
         let tx = game.destinationMarker.tx, ty = game.destinationMarker.ty;
@@ -505,217 +506,131 @@ function render() {
         else if (['rock','ruin_wall'].includes(e.type)) addShadow(faces, e.tx+0.5, e.ty+0.5, 0.6);
         else if (['vehicle','house'].includes(e.type)) addShadow(faces, e.tx+0.5, e.ty+0.5, 1.0);
         else if (e.type !== 'torch' && e.type !== 'campfire') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.4);
-        
-        if (e.type === 'tree') {
-            let s = Math.sin(game.frameCount * 0.03 + e.swayPhase) * 0.1;
-            addCube(faces, e.tx+0.5+s, h+1.5, e.ty+0.5, 1.2, 1.2, 1.2, [26,128,51]);
-            addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.3, 1.0, 0.3, [102,51,26]);
-        } else if (e.type === 'rock') addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [128,128,128]);
+        if (e.type === 'tree') { let s = Math.sin(game.frameCount * 0.03 + e.swayPhase) * 0.1; addCube(faces, e.tx+0.5+s, h+1.5, e.ty+0.5, 1.2, 1.2, 1.2, [26,128,51]); addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.3, 1.0, 0.3, [102,51,26]); }
+        else if (e.type === 'rock') addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [128,128,128]);
         else if (e.type === 'metal') addCube(faces, e.tx+0.5, h+0.2, e.ty+0.5, 0.9, 0.4, 0.9, [153,77,26]);
-        else if (e.type === 'bush') {
-            let s = Math.sin(game.frameCount * 0.05 + e.swayPhase) * 0.05;
-            addCube(faces, e.tx+0.5+s, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [40,100,40]);
-        } else if (e.type === 'ruin_wall') addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.8, 1.0, 0.3, [110,100,90]);
-        else if (e.type === 'vehicle') {
-            addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 1.5, 0.4, 0.8, [130,70,30]);
-            addCube(faces, e.tx+0.5, h+0.8, e.ty+0.5, 0.8, 0.4, 0.8, [140,80,30]);
-        } else if (e.type === 'house') {
-            addCube(faces, e.tx+0.5, h+0.6, e.ty+0.5, 1.8, 1.2, 1.8, [100,90,80]);
-            addCube(faces, e.tx+0.5, h+1.3, e.ty+0.5, 2.0, 0.2, 2.0, [80,50,40]);
-        } else if (e.type === 'torch') {
-            addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.1, 1.0, 0.1, [100,60,30]);
-            addCube(faces, e.tx+0.5, h+1.0, e.ty+0.5, 0.25, 0.25, 0.25, [255, 200, 0]);
-        } else if (e.type === 'campfire') {
-            addCube(faces, e.tx+0.2, h+0.1, e.ty+0.5, 0.3, 0.2, 0.3, [128,128,128]);
-            addCube(faces, e.tx+0.8, h+0.1, e.ty+0.5, 0.3, 0.2, 0.3, [128,128,128]);
-            addCube(faces, e.tx+0.5, h+0.1, e.ty+0.2, 0.3, 0.2, 0.3, [128,128,128]);
-            addCube(faces, e.tx+0.5, h+0.1, e.ty+0.8, 0.3, 0.2, 0.3, [128,128,128]);
-            addCube(faces, e.tx+0.5, h+0.4, e.ty+0.5, 0.6, 0.2, 0.2, [150, 80, 30]);
-            addCube(faces, e.tx+0.5, h+0.6, e.ty+0.5, 0.4, 0.3, 0.4, [255, 150, 0]);
-        }
+        else if (e.type === 'bush') { let s = Math.sin(game.frameCount * 0.05 + e.swayPhase) * 0.05; addCube(faces, e.tx+0.5+s, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [40,100,40]); }
+        else if (e.type === 'ruin_wall') addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.8, 1.0, 0.3, [110,100,90]);
+        else if (e.type === 'vehicle') { addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 1.5, 0.4, 0.8, [130,70,30]); addCube(faces, e.tx+0.5, h+0.8, e.ty+0.5, 0.8, 0.4, 0.8, [140,80,30]); }
+        else if (e.type === 'house') { addCube(faces, e.tx+0.5, h+0.6, e.ty+0.5, 1.8, 1.2, 1.8, [100,90,80]); addCube(faces, e.tx+0.5, h+1.3, e.ty+0.5, 2.0, 0.2, 2.0, [80,50,40]); }
+        else if (e.type === 'torch') { addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.1, 1.0, 0.1, [100,60,30]); addCube(faces, e.tx+0.5, h+1.0, e.ty+0.5, 0.25, 0.25, 0.25, [255, 200, 0]); }
+        else if (e.type === 'campfire') { addCube(faces, e.tx+0.2, h+0.1, e.ty+0.5, 0.3, 0.2, 0.3, [128,128,128]); addCube(faces, e.tx+0.8, h+0.1, e.ty+0.5, 0.3, 0.2, 0.3, [128,128,128]); addCube(faces, e.tx+0.5, h+0.1, e.ty+0.2, 0.3, 0.2, 0.3, [128,128,128]); addCube(faces, e.tx+0.5, h+0.1, e.ty+0.8, 0.3, 0.2, 0.3, [128,128,128]); addCube(faces, e.tx+0.5, h+0.4, e.ty+0.5, 0.6, 0.2, 0.2, [150, 80, 30]); addCube(faces, e.tx+0.5, h+0.6, e.ty+0.5, 0.4, 0.3, 0.4, [255, 150, 0]); }
     });
 
     let playerY = p.y;
     addShadow(faces, p.x, p.z, 0.4, 70 * (1 - Math.min(1, p.jumpY / 0.6)));
-    
     let speedMul = 0.5;
     let breathe = 0, ls = 0, asr = 0, asl = 0;
-    if (p.state === 'walk') {
-        ls = Math.sin(game.frameCount * 0.4 * speedMul) * 0.5;
-        asr = -ls; asl = ls;
-        breathe = Math.abs(Math.sin(game.frameCount * 0.4 * speedMul)) * 0.05;
-    } else if (p.state === 'gather') {
-        asr = Math.sin(game.frameCount * 0.8 * speedMul) * 1.2;
-        breathe = Math.sin(game.frameCount * 0.5 * speedMul) * 0.05;
-    } else {
-        breathe = Math.sin(game.frameCount * 0.05 * speedMul) * 0.05;
-    }
-
-    let hipY = playerY + 0.5;
-    let torsoY = playerY + 0.8 + breathe;
-    let shoulderY = playerY + 1.1 + breathe;
-    let headY = playerY + 1.4 + breathe;
-
-    let ro = rotateY(0.15,0,0,p.angle);
-    addCube(faces, p.x+ro[0], hipY, p.z+ro[2], 0.2, 0.5, 0.2, [50,50,50], -ls, p.angle, 0, -0.25, 0);
-    let lo = rotateY(-0.15,0,0,p.angle);
-    addCube(faces, p.x+lo[0], hipY, p.z+lo[2], 0.2, 0.5, 0.2, [50,50,50], ls, p.angle, 0, -0.25, 0);
-    
+    if (p.state === 'walk') { ls = Math.sin(game.frameCount * 0.4 * speedMul) * 0.5; asr = -ls; asl = ls; breathe = Math.abs(Math.sin(game.frameCount * 0.4 * speedMul)) * 0.05; }
+    else if (p.state === 'gather') { asr = Math.sin(game.frameCount * 0.8 * speedMul) * 1.2; breathe = Math.sin(game.frameCount * 0.5 * speedMul) * 0.05; }
+    else { breathe = Math.sin(game.frameCount * 0.05 * speedMul) * 0.05; }
+    let hipY = playerY + 0.5, torsoY = playerY + 0.8 + breathe, shoulderY = playerY + 1.1 + breathe, headY = playerY + 1.4 + breathe;
+    let ro = rotateY(0.15,0,0,p.angle); addCube(faces, p.x+ro[0], hipY, p.z+ro[2], 0.2, 0.5, 0.2, [50,50,50], -ls, p.angle, 0, -0.25, 0);
+    let lo = rotateY(-0.15,0,0,p.angle); addCube(faces, p.x+lo[0], hipY, p.z+lo[2], 0.2, 0.5, 0.2, [50,50,50], ls, p.angle, 0, -0.25, 0);
     addCube(faces, p.x, torsoY, p.z, 0.5, 0.6, 0.3, [51,102,204], 0, p.angle);
-    let rao = rotateY(0.35,0,0,p.angle);
-    addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.2, 0.5, 0.2, [40,80,160], -asr, p.angle, 0, -0.25, 0);
-    let lao = rotateY(-0.35,0,0,p.angle);
-    addCube(faces, p.x+lao[0], shoulderY, p.z+lao[2], 0.2, 0.5, 0.2, [40,80,160], -asl, p.angle, 0, -0.25, 0);
+    let rao = rotateY(0.35,0,0,p.angle); addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.2, 0.5, 0.2, [40,80,160], -asr, p.angle, 0, -0.25, 0);
+    let lao = rotateY(-0.35,0,0,p.angle); addCube(faces, p.x+lao[0], shoulderY, p.z+lao[2], 0.2, 0.5, 0.2, [40,80,160], -asl, p.angle, 0, -0.25, 0);
     addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [230,179,128], 0, p.angle);
 
     let renderables = [];
     faces.forEach(f => {
         let pv = []; let valid = true;
-        for (let v of f.verts) {
-            let proj = project(v[0], v[1], v[2], cam);
-            if (!proj) { valid = false; break; }
-            pv.push(proj);
-        }
-        if (valid) {
-            let avgZ = pv.reduce((s,p)=>s+p[2],0) / pv.length;
-            renderables.push({ verts: pv, color: f.color, z: avgZ });
-        }
+        for (let v of f.verts) { let proj = project(v[0], v[1], v[2], cam); if (!proj) { valid = false; break; } pv.push(proj); }
+        if (valid) { let avgZ = pv.reduce((s,p)=>s+p[2],0) / pv.length; renderables.push({ verts: pv, color: f.color, z: avgZ }); }
     });
     renderables.sort((a,b) => b.z - a.z);
+    renderables.forEach(r => { ctx.beginPath(); ctx.moveTo(r.verts[0][0], r.verts[0][1]); for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]); ctx.closePath(); ctx.fillStyle = r.color; ctx.fill(); });
 
-    renderables.forEach(r => {
-        ctx.beginPath();
-        ctx.moveTo(r.verts[0][0], r.verts[0][1]);
-        for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]);
-        ctx.closePath();
-        ctx.fillStyle = r.color;
-        ctx.fill();
-    });
-
-    // --- 2D UI ---
-    ctx.textAlign = 'left';
-    ctx.font = '22px Arial';
-    ctx.fillStyle = 'white';
+    // --- 2D UI (Text & Hotbar) ---
+    ctx.textAlign = 'left'; ctx.font = '22px Arial'; ctx.fillStyle = 'white';
     let invY = 20;
-    Object.keys(game.inventory).forEach(item => {
-        if (game.inventory[item] > 0 || ['Wood','Stone','Metal','Fiber'].includes(item)) {
-            ctx.fillText(`${item}: ${game.inventory[item]}`, 20, invY);
-            invY += 30;
-        }
-    });
-
+    Object.keys(game.inventory).forEach(item => { if (game.inventory[item] > 0 || ['Wood','Stone','Metal','Fiber'].includes(item)) { ctx.fillText(`${item}: ${game.inventory[item]}`, 20, invY); invY += 30; } });
     let tStr = game.ambientLight < 0.5 ? "Night" : "Day";
-    ctx.textAlign = 'right';
-    ctx.fillText(`Time: ${tStr}`, GAME_W - 20, 40);
-
+    ctx.textAlign = 'right'; ctx.fillText(`Time: ${tStr}`, GAME_W - 20, 40);
     ctx.textAlign = 'center';
-    game.feedbackTexts.forEach(ft => {
-        ctx.globalAlpha = Math.max(0, ft.timer / 2.0);
-        ctx.fillStyle = 'yellow';
-        ctx.fillText(ft.text, ft.x, ft.y);
-    });
+    game.feedbackTexts.forEach(ft => { ctx.globalAlpha = Math.max(0, ft.timer / 2.0); ctx.fillStyle = 'yellow'; ctx.fillText(ft.text, ft.x, ft.y); });
     ctx.globalAlpha = 1.0;
 
-    // Hotbar
-    let hbY = GAME_H - 60;
-    let hbStartX = GAME_W / 2 - 125;
+    // --- Hotbar (Custom UI Images) ---
+    let hbSize = 60;
+    let totalW = 5 * hbSize;
+    let hbStartX = (GAME_W / 2) - (totalW / 2);
+    let hbY = GAME_H - 70;
     for (let i = 0; i < 5; i++) {
-        let hx = hbStartX + i * 50;
-        ctx.fillStyle = game.selectedSlot === i ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.5)';
-        ctx.fillRect(hx, hbY, 50, 50);
-        ctx.strokeStyle = game.selectedSlot === i ? 'white' : 'gray';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(hx, hbY, 50, 50);
-        
+        let hx = hbStartX + i * hbSize;
+        if (uiAssets['hotbar_slot'].complete) {
+            ctx.drawImage(uiAssets['hotbar_slot'], hx, hbY, hbSize, hbSize);
+        }
+        if (game.selectedSlot === i) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(hx, hbY, hbSize, hbSize);
+        }
         ctx.fillStyle = 'white';
         ctx.font = '10px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(game.hotbar[i], hx + 25, hbY + 45);
-        
+        ctx.fillText(game.hotbar[i], hx + hbSize/2, hbY + hbSize - 5);
         let count = game.inventory[game.hotbar[i]];
         if (count !== undefined && count > 0) {
-            ctx.font = 'bold 14px Arial';
+            ctx.font = 'bold 16px Arial';
             ctx.textAlign = 'right';
-            ctx.fillText(count, hx + 45, hbY + 18);
+            ctx.fillText(count, hx + hbSize - 5, hbY + 18);
         }
     }
 
-    // Touch Controls
+    // --- Touch Controls (Custom UI Images) ---
     if (game.state === 'playing') {
         let btns = getButtons();
         if (game.joy.active) {
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.arc(game.joy.x, game.joy.y, 60, 0, Math.PI*2);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(game.joy.x + game.joy.dx, game.joy.y + game.joy.dy, 25, 0, Math.PI*2);
-            ctx.fillStyle = 'rgba(255,255,255,0.4)';
-            ctx.fill();
-            ctx.stroke();
+            drawUIImage('joystick_base', game.joy.x, game.joy.y, 160);
+            drawUIImage('joystick_knob', game.joy.x + game.joy.dx, game.joy.y + game.joy.dy, 80);
         }
-
-        // Break
-        ctx.beginPath(); ctx.arc(btns.break.x, btns.break.y, btns.break.r, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(200, 50, 50, 0.6)'; ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 100, 100, 0.9)'; ctx.lineWidth = 4; ctx.stroke();
-        ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(btns.break.x - 20, btns.break.y - 20); ctx.lineTo(btns.break.x + 20, btns.break.y + 20); ctx.stroke();
-        ctx.beginPath(); ctx.arc(btns.break.x - 20, btns.break.y - 20, 18, 0, Math.PI, true); ctx.stroke();
-
-        // Jump
-        ctx.beginPath(); ctx.arc(btns.jump.x, btns.jump.y, btns.jump.r, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(50, 200, 100, 0.6)'; ctx.fill();
-        ctx.strokeStyle = 'rgba(100, 255, 150, 0.9)'; ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(btns.jump.x, btns.jump.y - 15); ctx.lineTo(btns.jump.x - 15, btns.jump.y + 10); ctx.lineTo(btns.jump.x + 15, btns.jump.y + 10); ctx.closePath(); ctx.fill();
-
-        // Craft
-        ctx.beginPath(); ctx.arc(btns.craft.x, btns.craft.y, btns.craft.r, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(50, 100, 200, 0.6)'; ctx.fill();
-        ctx.strokeStyle = 'rgba(100, 150, 255, 0.9)'; ctx.stroke();
-        ctx.beginPath();
-        ctx.rect(btns.craft.x - 15, btns.craft.y - 15, 10, 10); ctx.rect(btns.craft.x + 5, btns.craft.y - 15, 10, 10);
-        ctx.rect(btns.craft.x - 15, btns.craft.y + 5, 10, 10); ctx.rect(btns.craft.x + 5, btns.craft.y + 5, 10, 10); ctx.stroke();
-
-        // Inventory
-        ctx.beginPath(); ctx.arc(btns.inv.x, btns.inv.y, btns.inv.r, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(100, 100, 100, 0.6)'; ctx.fill();
-        ctx.strokeStyle = 'rgba(150, 150, 150, 0.9)'; ctx.stroke();
-        ctx.beginPath();
-        ctx.rect(btns.inv.x - 20, btns.inv.y - 10, 40, 20); ctx.rect(btns.inv.x - 10, btns.inv.y - 20, 20, 40); ctx.stroke();
+        drawUIImage('btn_break', btns.break.x, btns.break.y, 90);
+        drawUIImage('btn_jump', btns.jump.x, btns.jump.y, 70);
+        drawUIImage('btn_craft', btns.craft.x, btns.craft.y, 90);
+        drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, 90);
     }
 
-    if (game.state === 'pause' || game.state === 'inventory' || game.state === 'crafting') {
+    // --- Menus (Crafting & Inventory) ---
+    if (game.state === 'crafting' || game.state === 'inventory') {
         ctx.fillStyle = 'rgba(0,0,0,0.7)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
-        ctx.fillStyle = 'rgba(50,50,50,0.95)';
-        ctx.fillRect(GAME_W/2-300, GAME_H/2-200, 600, 400);
-        ctx.strokeStyle = 'rgb(90,90,90)';
-        ctx.strokeRect(GAME_W/2-300, GAME_H/2-200, 600, 400);
+        
+        let winW = 600;
+        let winH = 600;
+        if (winW > GAME_W * 0.9) { winW = GAME_W * 0.9; winH = winW; }
+        let winX = (GAME_W / 2) - (winW / 2);
+        let winY = (GAME_H / 2) - (winH / 2);
+        
+        if (uiAssets['ui_window'].complete) {
+            ctx.drawImage(uiAssets['ui_window'], winX, winY, winW, winH);
+        } else {
+            ctx.fillStyle = 'rgba(50,50,50,0.95)';
+            ctx.fillRect(winX, winY, winW, winH);
+        }
+
+        // Darken the inside of the window slightly for text readability
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(winX + 40, winY + 40, winW - 80, winH - 80);
         
         ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.font = 'bold 28px Arial';
-        ctx.fillText(game.state.toUpperCase(), GAME_W/2, GAME_H/2 - 150);
+        ctx.fillText(game.state.toUpperCase(), GAME_W/2, winY + 80);
 
         if (game.state === 'inventory') {
             let items = Object.keys(game.inventory);
             let cols = 4;
             let boxW = 80, boxH = 80;
             let startX = GAME_W/2 - (cols * boxW) / 2;
-            let startY = GAME_H/2 - 80;
-
+            let startY = winY + 120;
             for(let i=0; i<items.length; i++) {
                 let col = i % cols;
                 let row = Math.floor(i / cols);
                 let ix = startX + col * boxW;
                 let iy = startY + row * boxH;
-
                 ctx.fillStyle = 'rgba(100,100,100,0.5)';
                 ctx.fillRect(ix, iy, boxW-10, boxH-10);
                 ctx.strokeStyle = 'gray';
                 ctx.strokeRect(ix, iy, boxW-10, boxH-10);
-
                 if(game.inventory[items[i]] > 0 || ['Wood','Stone','Metal','Fiber'].includes(items[i])) {
                     ctx.fillStyle = 'white';
                     ctx.font = '12px Arial';
@@ -726,24 +641,22 @@ function render() {
                 }
             }
             ctx.fillStyle = 'rgb(150,150,150)'; ctx.font = '18px Arial';
-            ctx.fillText("Tap outside to close", GAME_W/2, GAME_H/2 + 160);
+            ctx.fillText("Tap outside to close", GAME_W/2, winY + winH - 40);
         }
 
         if (game.state === 'crafting') {
             game.craftSlots = [];
-            let rx = GAME_W/2, ry = GAME_H/2 - 50;
+            let rx = GAME_W/2, ry = winY + 120;
             ctx.font = '20px Arial';
             ctx.fillText('Recipes (Tap to Craft)', rx, ry - 20);
-            
             game.recipes.forEach((rec, i) => {
                 let sx = rx - 150, sy = ry + i * 55;
-                ctx.fillStyle = 'rgb(70,70,70)';
+                ctx.fillStyle = 'rgba(70,70,70,0.8)';
                 ctx.fillRect(sx, sy, 300, 45);
-                ctx.fillStyle = 'rgb(55,55,55)';
+                ctx.fillStyle = 'rgba(55,55,55,0.9)';
                 ctx.fillRect(sx+3, sy+3, 294, 39);
                 ctx.fillStyle = rec.color;
                 ctx.fillRect(sx+8, sy+8, 24, 24);
-                
                 ctx.textAlign = 'left'; ctx.fillStyle = 'white';
                 ctx.fillText(rec.name, sx+45, sy+18);
                 let costStr = Object.keys(rec.cost).map(r => `${r}:${rec.cost[r]}`).join(' | ');
