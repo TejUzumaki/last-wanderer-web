@@ -292,7 +292,6 @@ canvas.addEventListener('pointerdown', e => {
     }
     if (game.state !== 'playing') return;
 
-    // Hotbar Selection
     let hbSize = 60;
     let totalW = 5 * hbSize;
     let hbStartX = (GAME_W / 2) - (totalW / 2);
@@ -306,7 +305,6 @@ canvas.addEventListener('pointerdown', e => {
         }
     }
 
-    // Right Side UI Buttons
     let btns = getButtons();
     if (x > GAME_W - 200) {
         if (Math.hypot(x - btns.break.x, y - btns.break.y) < btns.break.r) { handleBreak(); return; }
@@ -541,7 +539,6 @@ function render() {
     renderables.sort((a,b) => b.z - a.z);
     renderables.forEach(r => { ctx.beginPath(); ctx.moveTo(r.verts[0][0], r.verts[0][1]); for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]); ctx.closePath(); ctx.fillStyle = r.color; ctx.fill(); });
 
-    // --- 2D UI (Text & Hotbar) ---
     ctx.textAlign = 'left'; ctx.font = '22px Arial'; ctx.fillStyle = 'white';
     let invY = 20;
     Object.keys(game.inventory).forEach(item => { if (game.inventory[item] > 0 || ['Wood','Stone','Metal','Fiber'].includes(item)) { ctx.fillText(`${item}: ${game.inventory[item]}`, 20, invY); invY += 30; } });
@@ -551,7 +548,6 @@ function render() {
     game.feedbackTexts.forEach(ft => { ctx.globalAlpha = Math.max(0, ft.timer / 2.0); ctx.fillStyle = 'yellow'; ctx.fillText(ft.text, ft.x, ft.y); });
     ctx.globalAlpha = 1.0;
 
-    // --- Hotbar (Custom UI Images) ---
     let hbSize = 60;
     let totalW = 5 * hbSize;
     let hbStartX = (GAME_W / 2) - (totalW / 2);
@@ -578,7 +574,6 @@ function render() {
         }
     }
 
-    // --- Touch Controls (Custom UI Images) ---
     if (game.state === 'playing') {
         let btns = getButtons();
         if (game.joy.active) {
@@ -591,7 +586,6 @@ function render() {
         drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, 90);
     }
 
-    // --- Menus (Crafting & Inventory) ---
     if (game.state === 'crafting' || game.state === 'inventory') {
         ctx.fillStyle = 'rgba(0,0,0,0.7)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
@@ -609,7 +603,6 @@ function render() {
             ctx.fillRect(winX, winY, winW, winH);
         }
 
-        // Darken the inside of the window slightly for text readability
         ctx.fillStyle = 'rgba(0,0,0,0.6)';
         ctx.fillRect(winX + 40, winY + 40, winW - 80, winH - 80);
         
