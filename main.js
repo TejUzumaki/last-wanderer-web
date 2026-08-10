@@ -16,6 +16,31 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// --- Hardcoded Pixel-Art SVG Assets ---
+const rawSVGs = {
+  joystick_base: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="30" y="16" width="4" height="32" fill="#222B14" /><rect x="16" y="30" width="32" height="4" fill="#222B14" /><rect x="30" y="18" width="4" height="28" fill="#88B04B" opacity="0.6" /><rect x="18" y="30" width="28" height="4" fill="#88B04B" opacity="0.6" /></svg>`,
+  joystick_knob: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 24,12 H 40 V 16 H 48 V 24 H 52 V 40 H 48 V 48 H 40 V 52 H 24 V 48 H 16 V 40 H 12 V 24 H 16 V 16 H 24 Z" fill="#FFFFFF" /><path d="M 24,16 H 40 V 20 H 44 V 24 H 48 V 40 H 44 V 44 H 40 V 48 H 24 V 44 H 20 V 40 H 16 V 24 H 20 V 20 H 24 Z" fill="#222B14" /><rect x="20" y="20" width="24" height="24" fill="#88B04B" /><rect x="24" y="24" width="16" height="16" fill="#A2D15B" /><rect x="26" y="26" width="6" height="6" fill="#FFFFFF" /></svg>`,
+  btn_break: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="28" height="28" fill="#A0A0A0" /><rect x="20" y="20" width="24" height="24" fill="#C0C0C0" /><rect x="30" y="20" width="4" height="6" fill="#222B14" /><rect x="26" y="26" width="6" height="4" fill="#222B14" /><rect x="30" y="30" width="4" height="8" fill="#222B14" /><rect x="34" y="34" width="8" height="4" fill="#222B14" /><rect x="22" y="32" width="6" height="4" fill="#222B14" /><rect x="16" y="24" width="3" height="3" fill="#88B04B" /><rect x="44" y="22" width="3" height="3" fill="#88B04B" /><rect x="42" y="40" width="3" height="3" fill="#88B04B" /></svg>`,
+  btn_jump: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><path d="M 32,16 L 46,30 H 38 V 46 H 26 V 30 H 18 Z" fill="#FFFFFF" /><path d="M 32,20 L 42,30 H 36 V 42 H 28 V 30 H 22 Z" fill="#88B04B" /></svg>`,
+  btn_craft: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="12" height="12" fill="#FFFFFF" /><rect x="20" y="20" width="8" height="8" fill="#121809" /><rect x="34" y="18" width="12" height="12" fill="#FFFFFF" /><rect x="36" y="20" width="8" height="8" fill="#121809" /><rect x="18" y="34" width="12" height="12" fill="#FFFFFF" /><rect x="20" y="36" width="8" height="8" fill="#121809" /><rect x="34" y="34" width="12" height="12" fill="#FFFFFF" /><rect x="36" y="36" width="8" height="8" fill="#88B04B" /></svg>`,
+  btn_inventory: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="28" height="10" fill="#FFFFFF" /><rect x="20" y="20" width="24" height="6" fill="#88B04B" /><rect x="22" y="20" width="4" height="22" fill="#222B14" /><rect x="38" y="20" width="4" height="22" fill="#222B14" /><rect x="22" y="28" width="4" height="4" fill="#FFD700" /><rect x="38" y="28" width="4" height="4" fill="#FFD700" /><rect x="18" y="28" width="28" height="18" fill="#FFFFFF" /><rect x="20" y="30" width="24" height="14" fill="#A2D15B" /></svg>`,
+  hotbar_slot: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 8,0 H 56 V 4 H 60 V 8 H 64 V 56 H 60 V 60 H 56 V 64 H 8 V 60 H 4 V 56 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 56 V 8 H 60 V 56 H 56 V 60 H 8 V 56 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="8" y="8" width="48" height="48" fill="#4A5D23" /><rect x="12" y="12" width="40" height="40" fill="#121809" /><path d="M 12,12 H 52 V 16 H 16 V 52 H 12 Z" fill="#0A0D06" /></svg>`,
+  ui_window: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" width="100%" height="100%" shape-rendering="crispEdges" preserveAspectRatio="none"><path d="M 8,0 H 112 V 4 H 116 V 8 H 120 V 72 H 116 V 76 H 112 V 80 H 8 V 76 H 4 V 72 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 112 V 8 H 116 V 72 H 112 V 76 H 8 V 72 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="6" y="6" width="108" height="68" fill="#4A5D23" /><rect x="30" y="10" width="60" height="14" fill="#FFFFFF" /><rect x="32" y="12" width="56" height="10" fill="#121809" /><rect x="14" y="28" width="92" height="40" fill="#121809" /><path d="M 14,28 H 106 V 31 H 17 V 68 H 14 Z" fill="#0A0D06" /></svg>`
+};
+
+// --- UI Asset Loader ---
+const uiAssets = {};
+for (const name in rawSVGs) {
+    uiAssets[name] = new Image();
+    uiAssets[name].src = 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(rawSVGs[name]);
+}
+
+function drawUIImage(imgName, cx, cy, size) {
+    if (uiAssets[imgName] && uiAssets[imgName].complete) {
+        ctx.drawImage(uiAssets[imgName], cx - size/2, cy - size/2, size, size);
+    }
+}
+
 // --- Game State ---
 const game = {
     mapW: 20, mapH: 20, map: [], obstacles: [], entities: [], grassTufts: [], lights: [],
@@ -438,75 +463,6 @@ function update(dt) {
     game.feedbackTexts = game.feedbackTexts.filter(ft => ft.timer > 0);
 }
 
-// --- UI Drawing Functions (Dark Green / White SVG) ---
-function drawUIButton(x, y, r, iconType) {
-    // Dark Green Base
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(30, 80, 40, 0.75)';
-    ctx.fill();
-    
-    // White Border
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.lineWidth = 4;
-    ctx.stroke();
-
-    // White SVG Icon
-    ctx.strokeStyle = 'white';
-    ctx.fillStyle = 'white';
-    ctx.lineWidth = 3;
-    
-    if (iconType === 'break') { // Pickaxe
-        ctx.beginPath();
-        ctx.moveTo(x - 15, y + 15);
-        ctx.lineTo(x + 15, y - 15);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(x + 15, y - 15, 12, Math.PI, 0, true);
-        ctx.stroke();
-    } else if (iconType === 'jump') { // Up Arrow
-        ctx.beginPath();
-        ctx.moveTo(x, y - 12);
-        ctx.lineTo(x - 12, y + 8);
-        ctx.lineTo(x + 12, y + 8);
-        ctx.closePath();
-        ctx.fill();
-    } else if (iconType === 'craft') { // Grid
-        ctx.fillRect(x - 10, y - 10, 8, 8);
-        ctx.fillRect(x + 2, y - 10, 8, 8);
-        ctx.fillRect(x - 10, y + 2, 8, 8);
-        ctx.fillRect(x + 2, y + 2, 8, 8);
-    } else if (iconType === 'inv') { // Backpack
-        ctx.fillRect(x - 10, y - 8, 20, 20);
-        ctx.fillRect(x - 5, y - 12, 10, 4);
-        ctx.strokeRect(x - 3, y, 6, 6);
-    }
-}
-
-function drawJoystick() {
-    let jx = game.joy.active ? game.joy.x : 120;
-    let jy = game.joy.active ? game.joy.y : GAME_H - 140;
-    let alpha = game.joy.active ? 1.0 : 0.3; // Faint hint when not active
-    
-    // Base
-    ctx.beginPath();
-    ctx.arc(jx, jy, 60, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(30, 80, 40, ${0.75 * alpha})`;
-    ctx.fill();
-    ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 * alpha})`;
-    ctx.lineWidth = 4;
-    ctx.stroke();
-    
-    // Knob
-    if (game.joy.active) {
-        ctx.beginPath();
-        ctx.arc(jx + game.joy.dx, jy + game.joy.dy, 25, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.fill();
-        ctx.stroke();
-    }
-}
-
 function render() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, GAME_W, GAME_H);
@@ -604,19 +560,19 @@ function render() {
     game.feedbackTexts.forEach(ft => { ctx.globalAlpha = Math.max(0, ft.timer / 2.0); ctx.fillStyle = 'yellow'; ctx.fillText(ft.text, ft.x, ft.y); });
     ctx.globalAlpha = 1.0;
 
-    // Hotbar
+    // --- Hotbar ---
     let hbSize = 60;
     let totalW = 5 * hbSize;
     let hbStartX = (GAME_W / 2) - (totalW / 2);
     let hbY = GAME_H - 70;
     for (let i = 0; i < 5; i++) {
         let hx = hbStartX + i * hbSize;
-        ctx.fillStyle = game.selectedSlot === i ? 'rgba(30, 80, 40, 0.9)' : 'rgba(30, 80, 40, 0.6)';
-        ctx.fillRect(hx, hbY, hbSize, hbSize);
-        ctx.strokeStyle = game.selectedSlot === i ? 'white' : 'rgba(255,255,255,0.5)';
-        ctx.lineWidth = game.selectedSlot === i ? 4 : 2;
-        ctx.strokeRect(hx, hbY, hbSize, hbSize);
-        
+        drawUIImage('hotbar_slot', hx + hbSize/2, hbY + hbSize/2, hbSize);
+        if (game.selectedSlot === i) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 1)';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(hx, hbY, hbSize, hbSize);
+        }
         ctx.fillStyle = 'white'; ctx.font = '10px Arial'; ctx.textAlign = 'center';
         ctx.fillText(game.hotbar[i], hx + hbSize/2, hbY + hbSize - 5);
         let count = game.inventory[game.hotbar[i]];
@@ -626,17 +582,27 @@ function render() {
         }
     }
 
-    // Touch Controls
+    // --- Touch Controls ---
     if (game.state === 'playing') {
-        drawJoystick();
         let btns = getButtons();
-        drawUIButton(btns.break.x, btns.break.y, btns.break.r, 'break');
-        drawUIButton(btns.jump.x, btns.jump.y, btns.jump.r, 'jump');
-        drawUIButton(btns.craft.x, btns.craft.y, btns.craft.r, 'craft');
-        drawUIButton(btns.inv.x, btns.inv.y, btns.inv.r, 'inv');
+        
+        // Joystick (Faint hint when not active)
+        let jx = game.joy.active ? game.joy.x : 120;
+        let jy = game.joy.active ? game.joy.y : GAME_H - 140;
+        ctx.globalAlpha = game.joy.active ? 1.0 : 0.3;
+        drawUIImage('joystick_base', jx, jy, 120);
+        if (game.joy.active) {
+            drawUIImage('joystick_knob', jx + game.joy.dx, jy + game.joy.dy, 50);
+        }
+        ctx.globalAlpha = 1.0;
+
+        drawUIImage('btn_break', btns.break.x, btns.break.y, 80);
+        drawUIImage('btn_jump', btns.jump.x, btns.jump.y, 70);
+        drawUIImage('btn_craft', btns.craft.x, btns.craft.y, 80);
+        drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, 80);
     }
 
-    // Menus
+    // --- Menus ---
     if (game.state === 'crafting' || game.state === 'inventory') {
         ctx.fillStyle = 'rgba(0,0,0,0.7)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
@@ -646,26 +612,26 @@ function render() {
         let winX = (GAME_W / 2) - (winW / 2);
         let winY = (GAME_H / 2) - (winH / 2);
         
-        ctx.fillStyle = 'rgba(30, 80, 40, 0.95)';
-        ctx.fillRect(winX, winY, winW, winH);
-        ctx.strokeStyle = 'white'; ctx.lineWidth = 4;
-        ctx.strokeRect(winX, winY, winW, winH);
+        // Draw SVG Window Stretched
+        if (uiAssets['ui_window'].complete) {
+            ctx.drawImage(uiAssets['ui_window'], winX, winY, winW, winH);
+        }
         
-        ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.font = 'bold 28px Arial';
-        ctx.fillText(game.state.toUpperCase(), GAME_W/2, winY + 50);
+        ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.font = 'bold 24px Arial';
+        ctx.fillText(game.state.toUpperCase(), GAME_W/2, winY + 40);
 
         if (game.state === 'inventory') {
             let items = Object.keys(game.inventory);
             let cols = 4;
             let boxW = 80, boxH = 80;
             let startX = GAME_W/2 - (cols * boxW) / 2;
-            let startY = winY + 100;
+            let startY = winY + 80;
             for(let i=0; i<items.length; i++) {
                 let col = i % cols;
                 let row = Math.floor(i / cols);
                 let ix = startX + col * boxW;
                 let iy = startY + row * boxH;
-                ctx.fillStyle = 'rgba(20, 50, 25, 0.9)';
+                ctx.fillStyle = 'rgba(18, 24, 9, 0.9)';
                 ctx.fillRect(ix, iy, boxW-10, boxH-10);
                 ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
                 ctx.strokeRect(ix, iy, boxW-10, boxH-10);
@@ -680,12 +646,12 @@ function render() {
 
         if (game.state === 'crafting') {
             game.craftSlots = [];
-            let rx = GAME_W/2, ry = winY + 100;
+            let rx = GAME_W/2, ry = winY + 80;
             ctx.font = '20px Arial';
             ctx.fillText('Recipes (Tap to Craft)', rx, ry - 20);
             game.recipes.forEach((rec, i) => {
                 let sx = rx - 150, sy = ry + i * 55;
-                ctx.fillStyle = 'rgba(20, 50, 25, 0.9)';
+                ctx.fillStyle = 'rgba(18, 24, 9, 0.9)';
                 ctx.fillRect(sx, sy, 300, 45);
                 ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
                 ctx.strokeRect(sx, sy, 300, 45);
