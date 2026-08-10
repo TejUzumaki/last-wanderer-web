@@ -42,6 +42,27 @@
     <canvas id="gameCanvas"></canvas>
     <script src="main.js"></script>
     <script>
+      // Force Fullscreen and Landscape Orientation on first click/tap
+      function enterFullscreenLandscape() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().then(() => {
+            if (screen.orientation && screen.orientation.lock) {
+              screen.orientation.lock('landscape').catch(e => console.warn("Orientation lock failed:", e));
+            }
+          }).catch(e => console.warn("Fullscreen request failed:", e));
+        } else if (elem.webkitRequestFullscreen) { // iOS Safari fallback
+          elem.webkitRequestFullscreen();
+        }
+      }
+
+      // Listen for the first interaction to trigger fullscreen
+      window.addEventListener('pointerdown', function handleFirstInteraction() {
+        enterFullscreenLandscape();
+        window.removeEventListener('pointerdown', handleFirstInteraction);
+      });
+
+      // Register Service Worker for PWA
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js');
       }
