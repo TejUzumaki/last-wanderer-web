@@ -16,20 +16,6 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// --- UI Asset Loader ---
-const uiAssets = {};
-const assetList = ['joystick_base', 'joystick_knob', 'btn_break', 'btn_jump', 'btn_craft', 'btn_inventory', 'hotbar_slot', 'ui_window'];
-assetList.forEach(name => {
-    uiAssets[name] = new Image();
-    uiAssets[name].src = `assets/ui/${name}.png`;
-});
-
-function drawUIImage(imgName, x, y, size) {
-    if (uiAssets[imgName] && uiAssets[imgName].complete) {
-        ctx.drawImage(uiAssets[imgName], x - size/2, y - size/2, size, size);
-    }
-}
-
 // --- Game State ---
 const game = {
     mapW: 20, mapH: 20, map: [], obstacles: [], entities: [], grassTufts: [], lights: [],
@@ -259,13 +245,13 @@ function handleBreak() {
 }
 
 function getButtons() {
-    let btnSize = 90;
+    let btnSize = 80;
     let bx = GAME_W - 60;
     return {
         break: { x: bx, y: GAME_H - 120, r: btnSize / 2 },
-        jump: { x: bx - 100, y: GAME_H - 150, r: (btnSize - 20) / 2 },
-        craft: { x: bx, y: GAME_H - 220, r: btnSize / 2 },
-        inv: { x: bx, y: GAME_H - 320, r: btnSize / 2 }
+        jump: { x: bx - 90, y: GAME_H - 140, r: (btnSize - 20) / 2 },
+        craft: { x: bx, y: GAME_H - 210, r: btnSize / 2 },
+        inv: { x: bx, y: GAME_H - 300, r: btnSize / 2 }
     };
 }
 
@@ -452,6 +438,75 @@ function update(dt) {
     game.feedbackTexts = game.feedbackTexts.filter(ft => ft.timer > 0);
 }
 
+// --- UI Drawing Functions (Dark Green / White SVG) ---
+function drawUIButton(x, y, r, iconType) {
+    // Dark Green Base
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(30, 80, 40, 0.75)';
+    ctx.fill();
+    
+    // White Border
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // White SVG Icon
+    ctx.strokeStyle = 'white';
+    ctx.fillStyle = 'white';
+    ctx.lineWidth = 3;
+    
+    if (iconType === 'break') { // Pickaxe
+        ctx.beginPath();
+        ctx.moveTo(x - 15, y + 15);
+        ctx.lineTo(x + 15, y - 15);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x + 15, y - 15, 12, Math.PI, 0, true);
+        ctx.stroke();
+    } else if (iconType === 'jump') { // Up Arrow
+        ctx.beginPath();
+        ctx.moveTo(x, y - 12);
+        ctx.lineTo(x - 12, y + 8);
+        ctx.lineTo(x + 12, y + 8);
+        ctx.closePath();
+        ctx.fill();
+    } else if (iconType === 'craft') { // Grid
+        ctx.fillRect(x - 10, y - 10, 8, 8);
+        ctx.fillRect(x + 2, y - 10, 8, 8);
+        ctx.fillRect(x - 10, y + 2, 8, 8);
+        ctx.fillRect(x + 2, y + 2, 8, 8);
+    } else if (iconType === 'inv') { // Backpack
+        ctx.fillRect(x - 10, y - 8, 20, 20);
+        ctx.fillRect(x - 5, y - 12, 10, 4);
+        ctx.strokeRect(x - 3, y, 6, 6);
+    }
+}
+
+function drawJoystick() {
+    let jx = game.joy.active ? game.joy.x : 120;
+    let jy = game.joy.active ? game.joy.y : GAME_H - 140;
+    let alpha = game.joy.active ? 1.0 : 0.3; // Faint hint when not active
+    
+    // Base
+    ctx.beginPath();
+    ctx.arc(jx, jy, 60, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(30, 80, 40, ${0.75 * alpha})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 * alpha})`;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    
+    // Knob
+    if (game.joy.active) {
+        ctx.beginPath();
+        ctx.arc(jx + game.joy.dx, jy + game.joy.dy, 25, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fill();
+        ctx.stroke();
+    }
+}
+
 function render() {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, GAME_W, GAME_H);
@@ -539,6 +594,7 @@ function render() {
     renderables.sort((a,b) => b.z - a.z);
     renderables.forEach(r => { ctx.beginPath(); ctx.moveTo(r.verts[0][0], r.verts[0][1]); for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]); ctx.closePath(); ctx.fillStyle = r.color; ctx.fill(); });
 
+    // --- 2D UI ---
     ctx.textAlign = 'left'; ctx.font = '22px Arial'; ctx.fillStyle = 'white';
     let invY = 20;
     Object.keys(game.inventory).forEach(item => { if (game.inventory[item] > 0 || ['Wood','Stone','Metal','Fiber'].includes(item)) { ctx.fillText(`${item}: ${game.inventory[item]}`, 20, invY); invY += 30; } });
@@ -548,112 +604,97 @@ function render() {
     game.feedbackTexts.forEach(ft => { ctx.globalAlpha = Math.max(0, ft.timer / 2.0); ctx.fillStyle = 'yellow'; ctx.fillText(ft.text, ft.x, ft.y); });
     ctx.globalAlpha = 1.0;
 
+    // Hotbar
     let hbSize = 60;
     let totalW = 5 * hbSize;
     let hbStartX = (GAME_W / 2) - (totalW / 2);
     let hbY = GAME_H - 70;
     for (let i = 0; i < 5; i++) {
         let hx = hbStartX + i * hbSize;
-        if (uiAssets['hotbar_slot'].complete) {
-            ctx.drawImage(uiAssets['hotbar_slot'], hx, hbY, hbSize, hbSize);
-        }
-        if (game.selectedSlot === i) {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(hx, hbY, hbSize, hbSize);
-        }
-        ctx.fillStyle = 'white';
-        ctx.font = '10px Arial';
-        ctx.textAlign = 'center';
+        ctx.fillStyle = game.selectedSlot === i ? 'rgba(30, 80, 40, 0.9)' : 'rgba(30, 80, 40, 0.6)';
+        ctx.fillRect(hx, hbY, hbSize, hbSize);
+        ctx.strokeStyle = game.selectedSlot === i ? 'white' : 'rgba(255,255,255,0.5)';
+        ctx.lineWidth = game.selectedSlot === i ? 4 : 2;
+        ctx.strokeRect(hx, hbY, hbSize, hbSize);
+        
+        ctx.fillStyle = 'white'; ctx.font = '10px Arial'; ctx.textAlign = 'center';
         ctx.fillText(game.hotbar[i], hx + hbSize/2, hbY + hbSize - 5);
         let count = game.inventory[game.hotbar[i]];
         if (count !== undefined && count > 0) {
-            ctx.font = 'bold 16px Arial';
-            ctx.textAlign = 'right';
+            ctx.font = 'bold 16px Arial'; ctx.textAlign = 'right';
             ctx.fillText(count, hx + hbSize - 5, hbY + 18);
         }
     }
 
+    // Touch Controls
     if (game.state === 'playing') {
+        drawJoystick();
         let btns = getButtons();
-        if (game.joy.active) {
-            drawUIImage('joystick_base', game.joy.x, game.joy.y, 160);
-            drawUIImage('joystick_knob', game.joy.x + game.joy.dx, game.joy.y + game.joy.dy, 80);
-        }
-        drawUIImage('btn_break', btns.break.x, btns.break.y, 90);
-        drawUIImage('btn_jump', btns.jump.x, btns.jump.y, 70);
-        drawUIImage('btn_craft', btns.craft.x, btns.craft.y, 90);
-        drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, 90);
+        drawUIButton(btns.break.x, btns.break.y, btns.break.r, 'break');
+        drawUIButton(btns.jump.x, btns.jump.y, btns.jump.r, 'jump');
+        drawUIButton(btns.craft.x, btns.craft.y, btns.craft.r, 'craft');
+        drawUIButton(btns.inv.x, btns.inv.y, btns.inv.r, 'inv');
     }
 
+    // Menus
     if (game.state === 'crafting' || game.state === 'inventory') {
         ctx.fillStyle = 'rgba(0,0,0,0.7)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
         
-        let winW = 600;
-        let winH = 600;
-        if (winW > GAME_W * 0.9) { winW = GAME_W * 0.9; winH = winW; }
+        let winW = 600, winH = 400;
+        if (winW > GAME_W * 0.9) { winW = GAME_W * 0.9; winH = winW * 0.66; }
         let winX = (GAME_W / 2) - (winW / 2);
         let winY = (GAME_H / 2) - (winH / 2);
         
-        if (uiAssets['ui_window'].complete) {
-            ctx.drawImage(uiAssets['ui_window'], winX, winY, winW, winH);
-        } else {
-            ctx.fillStyle = 'rgba(50,50,50,0.95)';
-            ctx.fillRect(winX, winY, winW, winH);
-        }
-
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        ctx.fillRect(winX + 40, winY + 40, winW - 80, winH - 80);
+        ctx.fillStyle = 'rgba(30, 80, 40, 0.95)';
+        ctx.fillRect(winX, winY, winW, winH);
+        ctx.strokeStyle = 'white'; ctx.lineWidth = 4;
+        ctx.strokeRect(winX, winY, winW, winH);
         
         ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.font = 'bold 28px Arial';
-        ctx.fillText(game.state.toUpperCase(), GAME_W/2, winY + 80);
+        ctx.fillText(game.state.toUpperCase(), GAME_W/2, winY + 50);
 
         if (game.state === 'inventory') {
             let items = Object.keys(game.inventory);
             let cols = 4;
             let boxW = 80, boxH = 80;
             let startX = GAME_W/2 - (cols * boxW) / 2;
-            let startY = winY + 120;
+            let startY = winY + 100;
             for(let i=0; i<items.length; i++) {
                 let col = i % cols;
                 let row = Math.floor(i / cols);
                 let ix = startX + col * boxW;
                 let iy = startY + row * boxH;
-                ctx.fillStyle = 'rgba(100,100,100,0.5)';
+                ctx.fillStyle = 'rgba(20, 50, 25, 0.9)';
                 ctx.fillRect(ix, iy, boxW-10, boxH-10);
-                ctx.strokeStyle = 'gray';
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
                 ctx.strokeRect(ix, iy, boxW-10, boxH-10);
                 if(game.inventory[items[i]] > 0 || ['Wood','Stone','Metal','Fiber'].includes(items[i])) {
-                    ctx.fillStyle = 'white';
-                    ctx.font = '12px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(items[i], ix + (boxW-10)/2, iy + 15);
+                    ctx.fillStyle = 'white'; ctx.font = '12px Arial'; ctx.textAlign = 'center';
+                    ctx.fillText(items[i], ix + (boxW-10)/2, iy + 20);
                     ctx.font = 'bold 24px Arial';
                     ctx.fillText(game.inventory[items[i]], ix + (boxW-10)/2, iy + (boxH-10)/2 + 10);
                 }
             }
-            ctx.fillStyle = 'rgb(150,150,150)'; ctx.font = '18px Arial';
-            ctx.fillText("Tap outside to close", GAME_W/2, winY + winH - 40);
         }
 
         if (game.state === 'crafting') {
             game.craftSlots = [];
-            let rx = GAME_W/2, ry = winY + 120;
+            let rx = GAME_W/2, ry = winY + 100;
             ctx.font = '20px Arial';
             ctx.fillText('Recipes (Tap to Craft)', rx, ry - 20);
             game.recipes.forEach((rec, i) => {
                 let sx = rx - 150, sy = ry + i * 55;
-                ctx.fillStyle = 'rgba(70,70,70,0.8)';
+                ctx.fillStyle = 'rgba(20, 50, 25, 0.9)';
                 ctx.fillRect(sx, sy, 300, 45);
-                ctx.fillStyle = 'rgba(55,55,55,0.9)';
-                ctx.fillRect(sx+3, sy+3, 294, 39);
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2;
+                ctx.strokeRect(sx, sy, 300, 45);
                 ctx.fillStyle = rec.color;
                 ctx.fillRect(sx+8, sy+8, 24, 24);
                 ctx.textAlign = 'left'; ctx.fillStyle = 'white';
                 ctx.fillText(rec.name, sx+45, sy+18);
                 let costStr = Object.keys(rec.cost).map(r => `${r}:${rec.cost[r]}`).join(' | ');
-                ctx.fillStyle = 'rgb(180,180,180)';
+                ctx.fillStyle = 'rgb(200,200,200)';
                 ctx.fillText(`Cost: ${costStr}`, sx+45, sy+35);
                 game.craftSlots.push({ recipe: rec, x: sx, y: sy, w: 300, h: 45 });
             });
