@@ -30,6 +30,7 @@ function loadAssets() {
     let promises = [];
     assetList.forEach(name => {
         uiAssets[name] = new Image();
+        // Using allSettled logic: if one fails, we still start the game
         let p = new Promise((resolve) => {
             uiAssets[name].onload = () => resolve();
             uiAssets[name].onerror = () => { console.warn(`Missing asset: ${name}`); resolve(); };
@@ -52,69 +53,25 @@ function drawUIRect(imgName, x, y, w, h) {
     }
 }
 
-// --- Item System ---
-const itemIds = ['Wood', 'Stone', 'Metal', 'Fiber', 'Axe', 'Pickaxe', 'Torch', 'Campfire'];
-
 // --- Game Engine Setup ---
 const game = {
     mapW: 22, mapH: 22, map: [], obstacles: [], entities: [], grassTufts: [], lights: [],
     player: { tx: 11, ty: 11, x: 11.5, z: 11.5, y: 0, jumpY: 0, path: [], state: 'idle', angle: 0, targetAngle: 0 },
     frameCount: 0, destinationMarker: null, pendingInteraction: null,
-    inv: new Array(36).fill(null), // 36 slots: 0-8 hotbar, 9-35 backpack
-    feedbackTexts: [], particles: [], state: 'menu',
+    inventory: { Wood: 2, Stone: 2, Metal: 0, Fiber: 1, Axe: 0, Pickaxe: 0, Campfire: 0, Torch: 0 },
+    feedbackTexts: [], state: 'menu',
     recipes: [
-        { name: 'Stone Axe', cost: { Wood: 3, Stone: 2 }, result: 'Axe', grid: ['Wood', 'Wood', null, 'Stone', 'Wood', null, null, null, null] },
-        { name: 'Stone Pickaxe', cost: { Wood: 2, Stone: 3 }, result: 'Pickaxe', grid: ['Stone', 'Stone', 'Stone', null, 'Wood', null, null, 'Wood', null] },
-        { name: 'Torch', cost: { Wood: 1, Fiber: 1 }, result: 'Torch', grid: ['Fiber', null, null, 'Wood', null, null, null, null, null] },
-        { name: 'Campfire', cost: { Wood: 5, Stone: 3 }, result: 'Campfire', grid: ['Wood', 'Stone', 'Wood', 'Stone', 'Wood', 'Stone', 'Wood', 'Stone', 'Wood'] }
+        { name: 'Stone Axe', cost: { Wood: 3, Stone: 2 }, result: 'Axe' },
+        { name: 'Stone Pickaxe', cost: { Wood: 2, Stone: 3 }, result: 'Pickaxe' },
+        { name: 'Torch', cost: { Wood: 1, Fiber: 1 }, result: 'Torch' },
+        { name: 'Campfire', cost: { Wood: 5, Stone: 3 }, result: 'Campfire' }
     ],
-    selectedRecipe: 0, selectedSlot: 0,
-    timeOfDay: 0.35, ambientLight: 1.0,
+    craftSlots: [], timeOfDay: 0.35, ambientLight: 1.0,
     joy: { active: false, x: 0, y: 0, dx: 0, dy: 0 },
+    hotbar: ['Hands', 'Axe', 'Pickaxe', 'Torch', 'Campfire'],
+    selectedSlot: 0,
     dialogue: null
 };
-
-// Initial Items
-game.inv[0] = { item: 'Wood', count: 5 };
-game.inv[1] = { item: 'Stone', count: 5 };
-game.inv[2] = { item: 'Fiber', count: 2 };
-
-function addItem(itemName, count) {
-    let added = 0;
-    for(let i=0; i<36; i++) {
-        if(game.inv[i] && game.inv[i].item === itemName) {
-            game.inv[i].count += (count - added);
-            added = count;
-            break;
-        }
-    }
-    if(added < count) {
-        for(let i=0; i<36; i++) {
-            if(!game.inv[i]) {
-                game.inv[i] = { item: itemName, count: count - added };
-                added = count;
-                break;
-            }
-        }
-    }
-}
-
-function removeItem(itemName, count) {
-    let removed = 0;
-    for(let i=35; i>=0; i--) {
-        if(game.inv[i] && game.inv[i].item === itemName) {
-            let canRemove = Math.min(count - removed, game.inv[i].count);
-            game.inv[i].count -= canRemove;
-            removed += canRemove;
-            if(game.inv[i].count <= 0) game.inv[i] = null;
-            if(removed === count) break;
-        }
-    }
-}
-
-function getItemCount(itemName) {
-    return game.inv.reduce((acc, slot) => acc + (slot && slot.item === itemName ? slot.count : 0), 0);
-}
 
 function getHeight(tx, ty) {
     if (tx < 0 || ty < 0 || tx >= game.mapW || ty >= game.mapH) return 0;
@@ -124,17 +81,21 @@ function getHeight(tx, ty) {
     return Math.round(h) * 0.25; 
 }
 
+// Handcrafted Map Zones
 for (let y = 0; y < game.mapH; y++) {
     for (let x = 0; x < game.mapW; x++) {
-        if (x >= 15 && x <= 18 && y >= 15 && y <= 18) game.map.push(2);
-        else if (x >= 4 && x <= 7 && y >= 4 && y <= 7) game.map.push(1);
-        else {
-            game.map.push(0);
+        if (x >= 15 && x <= 18 && y >= 15 && y <= 18) {
+            game.map.push(2); // Lake
+        } else if (x >= 4 && x <= 7 && y >= 4 && y <= 7) {
+            game.map.push(1); // Dirt Patch
+        } else {
+            game.map.push(0); // Grass
             if (Math.random() < 0.2) game.grassTufts.push({ x: x + 0.2 + Math.random()*0.6, z: y + 0.2 + Math.random()*0.6 });
         }
     }
 }
 
+// Place Handcrafted Entities
 game.entities.push({ type: 'spirit', tx: 13, ty: 11, swayPhase: 0, talked: false });
 game.obstacles.push("13,11");
 
@@ -263,22 +224,24 @@ function addCube(faces, px, py, pz, w, h, d, color, rx=0, ry=0, ox=0, oy=0, oz=0
     faces.push({ verts: [rv[2], rv[1], rv[5], rv[6]], color: shade(color, 0.55, cx+0.5, cy, cz) });
 }
 
+function addDiamondGrass(faces, px, pz, sway) {
+    let c = [74, 93, 35];
+    faces.push({ verts: [[px-0.05, 0, pz], [px+0.05, 0, pz], [px+sway, 0.4, pz], [px+sway-0.1, 0.4, pz]], color: shade(c, 1.0, px, 0.2, pz) });
+    faces.push({ verts: [[px-0.05, 0, pz], [px+0.05, 0, pz], [px-0.3+sway, 0.35, pz+0.2], [px-0.4+sway, 0.35, pz+0.2]], color: shade(c, 0.8, px, 0.2, pz) });
+}
+
 function addShadow(faces, px, pz, r, op=80) {
     let nf = game.ambientLight;
     faces.push({ verts: [[px-r, 0.01, pz-r], [px+r, 0.01, pz-r], [px+r, 0.01, pz+r], [px-r, 0.01, pz+r]], color: `rgba(18,24,9,${(op/255)*nf})` });
 }
 
-function spawnParticles(x, y, z, color, count) {
-    for(let i=0; i<count; i++) {
-        game.particles.push({
-            x, y, z,
-            vx: (Math.random() - 0.5) * 2,
-            vy: Math.random() * 2,
-            vz: (Math.random() - 0.5) * 2,
-            life: 1.0,
-            color: color
-        });
+function checkToolRequirement(entity) {
+    let selectedItem = game.hotbar[game.selectedSlot];
+    if ((entity.type === 'rock' || entity.type === 'ruin_wall') && selectedItem !== 'Pickaxe') {
+        game.feedbackTexts.push({ text: 'Faster with Pickaxe!', x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
+        return false;
     }
+    return true;
 }
 
 function handleMoveClick(mx, my) {
@@ -294,10 +257,10 @@ function handleMoveClick(mx, my) {
         }
     }
     if (closestTx !== -1 && minDist < 90) {
-        let selectedItem = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
-        if ((selectedItem === 'Torch' || selectedItem === 'Campfire') && getItemCount(selectedItem) > 0) {
+        let selectedItem = game.hotbar[game.selectedSlot];
+        if ((selectedItem === 'Torch' || selectedItem === 'Campfire') && game.inventory[selectedItem] > 0) {
             if (isWalkable(closestTx, closestTy)) {
-                removeItem(selectedItem, 1);
+                game.inventory[selectedItem]--;
                 let h = getHeight(closestTx, closestTy);
                 if (selectedItem === 'Torch') {
                     game.entities.push({ type: 'torch', tx: closestTx, ty: closestTy, swayPhase: 0 });
@@ -327,11 +290,7 @@ function handleBreak() {
         if (d < minD) { minD = d; closest = e; }
     });
     if (closest) {
-        let selectedItem = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
-        if (closest.type === 'ruin_wall' && selectedItem !== 'Pickaxe') {
-            game.feedbackTexts.push({ text: 'Need Pickaxe!', x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
-            return;
-        }
+        if (!checkToolRequirement(closest)) return; 
         
         let bestAdj = null, minAdjD = 999;
         for(let dx=-1; dx<=1; dx++) {
@@ -377,46 +336,31 @@ canvas.addEventListener('pointerdown', e => {
     if (game.state === 'dialogue') { game.state = 'playing'; return; }
 
     if (game.state === 'crafting' || game.state === 'inventory') {
-        // Check recipe clicks in crafting
         if (game.state === 'crafting') {
-            // Recipe selection
-            let recStartY = GAME_H/2 - 150;
-            for(let i=0; i<game.recipes.length; i++) {
-                let recY = recStartY + i * 40;
-                if (x > GAME_W/2 - 250 && x < GAME_W/2 - 230 && y > recY && y < recY + 30) {
-                    game.selectedRecipe = i;
+            for (let btn of game.craftSlots) {
+                if (x >= btn.x && x <= btn.x + btn.w && y >= btn.y && y <= btn.y + btn.h) {
+                    let rec = btn.recipe;
+                    let canCraft = Object.keys(rec.cost).every(res => game.inventory[res] >= rec.cost[res]);
+                    if (canCraft) {
+                        Object.keys(rec.cost).forEach(res => game.inventory[res] -= rec.cost[res]);
+                        game.inventory[rec.result]++;
+                        game.feedbackTexts.push({ text: `Crafted ${rec.name}!`, x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
+                    }
                     return;
                 }
             }
-            // Craft button (Output box)
-            let outX = GAME_W/2 + 120, outY = GAME_H/2 - 60;
-            if (x > outX && x < outX + 60 && y > outY && y < outY + 60) {
-                let rec = game.recipes[game.selectedRecipe];
-                let canCraft = Object.keys(rec.cost).every(res => getItemCount(res) >= rec.cost[res]);
-                if (canCraft) {
-                    Object.keys(rec.cost).forEach(res => removeItem(res, rec.cost[res]));
-                    addItem(rec.result, 1);
-                    game.feedbackTexts.push({ text: `Crafted ${rec.name}!`, x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
-                }
-                return;
-            }
         }
-        // Click outside to close
-        if (x < GAME_W/2 - 300 || x > GAME_W/2 + 300 || y < GAME_H/2 - 200 || y > GAME_H/2 + 200) {
-            game.state = 'playing'; return;
-        }
-        return;
+        game.state = 'playing'; return;
     }
 
-    // Hotbar Selection (9 slots)
     let btns = getButtons();
-    let hbSize = Math.floor(50 * btns.scale);
-    let totalW = 9 * hbSize;
+    let hbSize = Math.floor(58 * btns.scale);
+    let totalW = 5 * hbSize;
     let hbStartX = (GAME_W / 2) - (totalW / 2);
     let hbY = GAME_H - hbSize - (16 * btns.scale);
 
     if (y > hbY && y < hbY + hbSize) {
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < 5; i++) {
             if (x > hbStartX + i*hbSize && x < hbStartX + i*hbSize + hbSize) {
                 game.selectedSlot = i; return;
             }
@@ -430,8 +374,8 @@ canvas.addEventListener('pointerdown', e => {
         if (Math.hypot(x - btns.inv.x, y - btns.inv.y) < btns.inv.r) { game.state = 'inventory'; return; }
     }
 
-    let selectedItem = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
-    let isPlacing = (selectedItem === 'Torch' || selectedItem === 'Campfire') && getItemCount(selectedItem) > 0;
+    let selectedItem = game.hotbar[game.selectedSlot];
+    let isPlacing = (selectedItem === 'Torch' || selectedItem === 'Campfire') && game.inventory[selectedItem] > 0;
 
     if (!isPlacing && x < GAME_W / 2) {
         game.joy.active = true; game.joy.x = x; game.joy.y = y; game.joy.dx = 0; game.joy.dy = 0;
@@ -462,7 +406,7 @@ window.addEventListener('keydown', e => {
     if (k === 'c') { if (game.state === 'playing') game.state = 'crafting'; else if (game.state === 'crafting') game.state = 'playing'; }
     else if (k === 'e') { if (game.state === 'playing') game.state = 'inventory'; else if (game.state === 'inventory') game.state = 'playing'; }
     else if (k === 'escape') { if (game.state !== 'menu') game.state = 'playing'; }
-    else if (['1','2','3','4','5','6','7','8','9'].includes(k)) game.selectedSlot = parseInt(k) - 1;
+    else if (['1','2','3','4','5'].includes(k)) game.selectedSlot = parseInt(k) - 1;
 });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -537,7 +481,7 @@ function update(dt) {
             
             let gatherTime = 1.0;
             let yieldAmount = 1;
-            let selectedItem = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
+            let selectedItem = game.hotbar[game.selectedSlot];
             
             if (e.type === 'tree' && selectedItem === 'Axe') gatherTime = 0.5;
             if (e.type === 'rock' && selectedItem === 'Pickaxe') { gatherTime = 0.5; yieldAmount = 2; }
@@ -546,23 +490,15 @@ function update(dt) {
             if (!p.gatherTimer) p.gatherTimer = gatherTime;
             p.gatherTimer -= dt;
             if (p.gatherTimer <= 0) {
-                let itemYield = null;
-                let particleColor = [128, 128, 128];
                 if (e.type === 'tree') {
                     if (selectedItem === 'Axe') yieldAmount = 2;
-                    itemYield = 'Wood'; particleColor = [92, 64, 51];
+                    game.inventory.Wood += yieldAmount; 
+                    game.feedbackTexts.push({text:`+${yieldAmount} Wood`, x:GAME_W/2, y:GAME_H/2, timer:2.0});
                 }
-                else if (e.type === 'rock') { itemYield = 'Stone'; particleColor = [128, 128, 128]; }
-                else if (e.type === 'metal') { itemYield = 'Metal'; particleColor = [112, 112, 112]; }
-                else if (e.type === 'bush') { itemYield = 'Fiber'; particleColor = [85, 122, 43]; }
-                else if (e.type === 'ruin_wall') { itemYield = 'Stone'; particleColor = [90, 85, 80]; }
-                
-                if(itemYield) {
-                    addItem(itemYield, yieldAmount); 
-                    game.feedbackTexts.push({text:`+${yieldAmount} ${itemYield}`, x:GAME_W/2, y:GAME_H/2, timer:2.0});
-                    spawnParticles(e.tx+0.5, 0.5, e.ty+0.5, particleColor, 8);
-                }
-                
+                else if (e.type === 'rock') { game.inventory.Stone += yieldAmount; game.feedbackTexts.push({text:`+${yieldAmount} Stone`, x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                else if (e.type === 'metal') { game.inventory.Metal += yieldAmount; game.feedbackTexts.push({text:`+${yieldAmount} Metal`, x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                else if (e.type === 'bush') { game.inventory.Fiber += yieldAmount; game.feedbackTexts.push({text:`+${yieldAmount} Fiber`, x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                else if (e.type === 'ruin_wall') { game.inventory.Stone += yieldAmount; game.feedbackTexts.push({text:`+${yieldAmount} Stone`, x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
                 game.entities.splice(game.entities.indexOf(e), 1);
                 game.obstacles.splice(game.obstacles.indexOf(`${e.tx},${e.ty}`), 1);
                 game.pendingInteraction = null; p.state = 'idle'; game.destinationMarker = null;
@@ -574,16 +510,6 @@ function update(dt) {
     let terrainY = getHeight(p.tx, p.ty);
     let targetY = terrainY + p.jumpY;
     p.y += (targetY - p.y) * Math.min(1, dt * 15);
-
-    // Update Particles
-    game.particles.forEach(pt => {
-        pt.x += pt.vx * dt;
-        pt.y += pt.vy * dt;
-        pt.z += pt.vz * dt;
-        pt.vy -= 5 * dt; // Gravity
-        pt.life -= dt * 1.5;
-    });
-    game.particles = game.particles.filter(pt => pt.life > 0);
 
     game.lights.forEach(l => { l.intensity = (l.baseIntensity || 1) + Math.sin(game.frameCount * 0.4 + l.x) * 0.08; });
     game.feedbackTexts.forEach(ft => { ft.y -= 22 * dt; ft.timer -= dt; });
@@ -684,7 +610,6 @@ function render() {
         }
     });
 
-    // Character Model (Removed black hair)
     let playerY = p.y;
     addShadow(faces, p.x, p.z, 0.4, 80 * (1 - Math.min(1, p.jumpY / 0.6)));
     let breathe = 0, ls = 0, asr = 0, asl = 0;
@@ -698,10 +623,9 @@ function render() {
     addCube(faces, p.x, torsoY, p.z, 0.5, 0.6, 0.3, [74,93,35], 0, p.angle);
     let rao = rotateY(0.35,0,0,p.angle); addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.2, 0.5, 0.2, [136,176,75], -asr, p.angle, 0, -0.25, 0);
     let lao = rotateY(-0.35,0,0,p.angle); addCube(faces, p.x+lao[0], shoulderY, p.z+lao[2], 0.2, 0.5, 0.2, [136,176,75], -asl, p.angle, 0, -0.25, 0);
-    addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [230,179,128], 0, p.angle); // Pure Skin
+    addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [210,160,110], 0, p.angle);
 
-    // Equipped Tool
-    let equippedTool = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
+    let equippedTool = game.hotbar[game.selectedSlot];
     if (equippedTool === 'Axe') {
         let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
         addCube(faces, hx, hy, hz, 0.08, 0.4, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.2, 0);
@@ -717,11 +641,6 @@ function render() {
         addCube(faces, hx, hy, hz, 0.15, 0.15, 0.15, [255, 200, 0], -asr, p.angle, 0, -0.35, 0);
     }
 
-    // Render 3D Particles
-    game.particles.forEach(pt => {
-        addCube(faces, pt.x, pt.y, pt.z, 0.15, 0.15, 0.15, pt.color);
-    });
-
     let renderables = [];
     faces.forEach(f => {
         let pv = []; let valid = true;
@@ -729,16 +648,7 @@ function render() {
         if (valid) { let avgZ = pv.reduce((s,p)=>s+p[2],0) / pv.length; renderables.push({ verts: pv, color: f.color, z: avgZ }); }
     });
     renderables.sort((a,b) => b.z - a.z);
-    renderables.forEach(r => { 
-        ctx.beginPath(); ctx.moveTo(r.verts[0][0], r.verts[0][1]); 
-        for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]); 
-        ctx.closePath(); ctx.fillStyle = r.color; ctx.fill(); 
-    });
-
-    // 2D Particles Alpha
-    game.particles.forEach(pt => {
-        // Handled by 3D rendering, just fading
-    });
+    renderables.forEach(r => { ctx.beginPath(); ctx.moveTo(r.verts[0][0], r.verts[0][1]); for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]); ctx.closePath(); ctx.fillStyle = r.color; ctx.fill(); });
 
     game.feedbackTexts.forEach(ft => {
         ctx.globalAlpha = Math.max(0, ft.timer / 2.0);
@@ -753,12 +663,11 @@ function render() {
     ctx.globalAlpha = 1.0;
     ctx.textBaseline = 'alphabetic';
 
-    // --- Hotbar (9 Slots) ---
-    let hbSize = Math.floor(50 * btns.scale);
-    let totalW = 9 * hbSize;
+    let hbSize = Math.floor(58 * btns.scale);
+    let totalW = 5 * hbSize;
     let hbStartX = (GAME_W / 2) - (totalW / 2);
     let hbY = GAME_H - hbSize - (16 * btns.scale);
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < 5; i++) {
         let hx = hbStartX + i * hbSize;
         let slotCx = hx + hbSize/2;
         let slotCy = hbY + hbSize/2;
@@ -769,12 +678,17 @@ function render() {
             drawUIImage('hotbar_selector', slotCx, slotCy, hbSize);
         }
         
-        if (game.inv[i]) {
-            drawUIImage('item_' + game.inv[i].item.toLowerCase(), slotCx, slotCy, hbSize * 0.7);
+        let itemName = game.hotbar[i];
+        if (itemName !== 'Hands' && game.inventory[itemName] > 0) {
+            drawUIImage('item_' + itemName.toLowerCase(), slotCx, slotCy, hbSize * 0.65);
+        }
+        
+        let count = game.inventory[itemName];
+        if (count !== undefined && count > 0) {
             ctx.fillStyle = '#A2D15B';
-            ctx.font = `bold ${Math.floor(10 * btns.scale)}px Arial`; 
+            ctx.font = `bold ${Math.floor(11 * btns.scale)}px Arial`; 
             ctx.textAlign = 'right';
-            ctx.fillText(game.inv[i].count, hx + hbSize - 4, hbY + 14);
+            ctx.fillText(count, hx + hbSize - 6, hbY + 15);
         }
     }
 
@@ -794,169 +708,131 @@ function render() {
         drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, btns.inv.r * 2);
     }
 
-    // --- Minecraft Style Inventory & Crafting ---
     if (game.state === 'crafting' || game.state === 'inventory') {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillStyle = 'rgba(18,24,9,0.75)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
         
-        let scale = btns.scale;
-        let cs = 50 * scale; // Cell Size
-        
-        // Window Dimensions (fits 9x4 grid + crafting area)
-        let winW = 11 * cs;
-        let winH = 6.5 * cs;
-        let winX = (GAME_W - winW) / 2;
-        let winY = (GAME_H - winH) / 2;
+        let winW = Math.min(GAME_W * 0.95, 580);
+        let winH = winW * (100 / 120);
+        let winX = (GAME_W / 2) - (winW / 2);
+        let winY = (GAME_H / 2) - (winH / 2);
         
         drawUIRect('ui_window', winX, winY, winW, winH);
         
+        let titleBoxY = winY + winH * (10 / 100);
+        let titleBoxH = winH * (14 / 100);
+        let titleCenterY = titleBoxY + titleBoxH * 0.5;
+
         ctx.fillStyle = '#FFFFFF'; 
-        ctx.textAlign = 'left'; 
-        ctx.textBaseline = 'top';
-        ctx.font = `900 ${Math.floor(20 * scale)}px "Courier New", monospace`;
-        ctx.fillText(game.state.toUpperCase(), winX + 20, winY + 15);
+        ctx.textAlign = 'center'; 
+        ctx.textBaseline = 'middle';
+        ctx.font = `900 ${Math.floor(winW * 0.045)}px "Courier New", monospace`;
+        ctx.fillText(game.state.toUpperCase(), GAME_W/2, titleCenterY);
 
-        // --- Inventory Grid (9x3) + Hotbar (9x1) ---
-        let invStartX = winX + (winW - 9 * cs) / 2;
-        let invStartY = winY + winH - 4.5 * cs;
-        let hbStartY = winY + winH - 1.5 * cs;
-        
-        for(let i=0; i<36; i++) {
-            let col = i % 9;
-            let row = Math.floor(i / 9);
-            let ix = invStartX + col * cs;
-            let iy = (row < 3) ? invStartY + row * cs : hbStartY;
+        if (game.state === 'inventory') {
+            let items = Object.keys(game.inventory);
+            let cols = 4;
+            let gridW = winW * 0.8;
+            let boxW = gridW / cols;
+            let startX = GAME_W/2 - gridW/2;
+            let startY = winY + winH * 0.30;
             
-            drawUIImage('inventory_slot', ix + cs/2, iy + cs/2, cs * 0.95);
-            
-            if (game.inv[i]) {
-                drawUIImage('item_' + game.inv[i].item.toLowerCase(), ix + cs/2, iy + cs/2, cs * 0.7);
-                ctx.fillStyle = '#A2D15B';
-                ctx.font = `bold ${Math.floor(12 * scale)}px Arial`; 
-                ctx.textAlign = 'right';
-                ctx.fillText(game.inv[i].count, ix + cs - 5, iy + 14);
-            }
-        }
-
-        // --- Crafting Area ---
-        if (game.state === 'crafting') {
-            let gridStartX = winX + 2 * cs;
-            let gridStartY = winY + 1.5 * cs;
-            
-            // Recipe List (Left)
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = `bold ${Math.floor(14 * scale)}px Arial`;
-            ctx.textAlign = 'left';
-            ctx.fillText("Recipes:", winX + 20, gridStartY);
-            
-            for(let i=0; i<game.recipes.length; i++) {
-                let recY = gridStartY + 30 + i * 35;
-                ctx.fillStyle = game.selectedRecipe === i ? '#88B04B' : '#FFFFFF';
-                ctx.fillText((i+1) + ". " + game.recipes[i].name, winX + 30, recY);
-            }
-            
-            // 3x3 Crafting Grid (Center)
-            for(let i=0; i<9; i++) {
-                let col = i % 3;
-                let row = Math.floor(i / 3);
-                let ix = gridStartX + col * cs;
-                let iy = gridStartY + row * cs;
-                drawUIImage('inventory_slot', ix + cs/2, iy + cs/2, cs * 0.95);
+            for(let i=0; i<items.length; i++) {
+                let col = i % cols;
+                let row = Math.floor(i / cols);
+                let ix = startX + col * boxW;
+                let iy = startY + row * boxW;
+                let cx = ix + boxW/2;
+                let cy = iy + boxW/2;
                 
-                let rec = game.recipes[game.selectedRecipe];
-                if(rec.grid[i]) {
-                    drawUIImage('item_' + rec.grid[i].toLowerCase(), ix + cs/2, iy + cs/2, cs * 0.7);
+                drawUIImage('inventory_slot', cx, cy, boxW * 0.9);
+                
+                let itemName = items[i];
+                if(game.inventory[itemName] > 0 || ['Wood','Stone','Metal','Fiber'].includes(itemName)) {
+                    drawUIImage('item_' + itemName.toLowerCase(), cx, cy, boxW * 0.65);
+                    
+                    ctx.fillStyle = '#A2D15B';
+                    ctx.font = `bold ${Math.floor(winW * 0.03)}px Arial`; 
+                    ctx.textAlign = 'right';
+                    ctx.fillText(game.inventory[itemName], ix + boxW - 8, iy + 15);
                 }
             }
-            
-            // Arrow & Output (Right)
-            let arrowX = gridStartX + 3 * cs + 10;
-            let arrowY = gridStartY + cs;
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = `bold ${Math.floor(20 * scale)}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText("->", arrowX + cs/2, arrowY + cs/2);
-            
-            let outX = arrowX + cs;
-            drawUIImage('inventory_slot', outX + cs/2, arrowY + cs/2, cs * 0.95);
-            let rec = game.recipes[game.selectedRecipe];
-            drawUIImage('item_' + rec.result.toLowerCase(), outX + cs/2, arrowY + cs/2, cs * 0.7);
-            
-            // Output Box Outline (Indicate click to craft)
-            ctx.strokeStyle = '#88B04B';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(outX, arrowY, cs, cs);
         }
-        ctx.textBaseline = 'alphabetic';
+
+        if (game.state === 'crafting') {
+            game.craftSlots = [];
+            let listW = winW * 0.85;
+            let rowH = winH * 0.12; 
+            let gap = winH * 0.03;
+            let startY = winY + winH * 0.30; 
+            
+            game.recipes.forEach((rec, i) => {
+                let sx = GAME_W/2 - listW/2;
+                let sy = startY + i * (rowH + gap);
+                
+                drawUIRect('recipe_row', sx, sy, listW, rowH);
+                drawUIImage('item_' + rec.result.toLowerCase(), sx + rowH * 0.5, sy + rowH * 0.5, rowH * 0.8);
+                
+                ctx.textAlign = 'left'; 
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = `900 ${Math.floor(winW * 0.035)}px "Courier New", monospace`;
+                ctx.fillText(rec.name, sx + rowH * 1.2, sy + rowH * 0.35);
+                
+                let costStr = Object.keys(rec.cost).map(r => `${r}:${rec.cost[r]}`).join(' ');
+                ctx.fillStyle = '#88B04B';
+                ctx.font = `900 ${Math.floor(winW * 0.025)}px "Courier New", monospace`;
+                ctx.fillText(costStr, sx + rowH * 1.2, sy + rowH * 0.7);
+                
+                game.craftSlots.push({ recipe: rec, x: sx, y: sy, w: listW, h: rowH });
+            });
+        }
+        ctx.textBaseline = 'alphabetic'; 
     }
 
-    // --- RPG Dialogue Box with Portrait ---
     if (game.state === 'dialogue' && game.dialogue) {
-        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
         
-        let scale = btns.scale;
         let boxW = Math.min(GAME_W * 0.9, 600);
-        let boxH = 180;
+        let boxH = 150;
         let boxX = (GAME_W - boxW) / 2;
         let boxY = GAME_H - boxH - 50;
         
         drawUIRect('ui_window', boxX, boxY, boxW, boxH);
         
-        // Portrait Background
-        ctx.fillStyle = '#121809';
-        ctx.fillRect(boxX + 10, boxY + 10, 100, 100);
-        
-        // Draw Pixel Art Portrait (Spirit of Nature)
-        let px = boxX + 20, py = boxY + 20, pSize = 10;
-        // Face
-        ctx.fillStyle = '#D2B48C'; ctx.fillRect(px+3*pSize, py+1*pSize, 2*pSize, 2*pSize);
-        // Hair (Vines)
-        ctx.fillStyle = '#4A5D23'; ctx.fillRect(px+2*pSize, py+0.5*pSize, 4*pSize, 1.5*pSize);
-        ctx.fillRect(px+2*pSize, py+1.5*pSize, 0.5*pSize, 2*pSize);
-        ctx.fillRect(px+5.5*pSize, py+1.5*pSize, 0.5*pSize, 2*pSize);
-        // Eyes
-        ctx.fillStyle = '#88B04B'; ctx.fillRect(px+3.5*pSize, py+1.5*pSize, 0.5*pSize, 0.5*pSize);
-        ctx.fillRect(px+4.5*pSize, py+1.5*pSize, 0.5*pSize, 0.5*pSize);
-        // Mouth
-        ctx.fillStyle = '#8B4513'; ctx.fillRect(px+3.5*pSize, py+2.5*pSize, 1*pSize, 0.2*pSize);
-        // Body (Leafy Dress)
-        ctx.fillStyle = '#74,93,35'; ctx.fillRect(px+2*pSize, py+3*pSize, 4*pSize, 4*pSize);
-        ctx.fillStyle = '#88B04B'; ctx.fillRect(px+2.5*pSize, py+3.5*pSize, 3*pSize, 1*pSize);
-        
-        // Text
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.font = `bold ${Math.floor(18 * scale)}px Arial`;
-        ctx.fillText(game.dialogue.speaker + ":", boxX + 130, boxY + 30);
+        ctx.font = `bold ${Math.floor(18 * btns.scale)}px Arial`;
+        ctx.fillText(game.dialogue.speaker + ":", boxX + 30, boxY + 30);
         
         ctx.fillStyle = '#A2D15B';
-        ctx.font = `${Math.floor(16 * scale)}px Arial`;
+        ctx.font = `${Math.floor(16 * btns.scale)}px Arial`;
         let words = game.dialogue.text.split(' ');
         let line = '';
         let y = boxY + 60;
         for(let i=0; i<words.length; i++) {
             let testLine = line + words[i] + ' ';
-            if (ctx.measureText(testLine).width > boxW - 150 && i > 0) {
-                ctx.fillText(line, boxX + 130, y);
+            if (ctx.measureText(testLine).width > boxW - 60 && i > 0) {
+                ctx.fillText(line, boxX + 30, y);
                 line = words[i] + ' ';
                 y += 25;
             } else {
                 line = testLine;
             }
         }
-        ctx.fillText(line, boxX + 130, y);
+        ctx.fillText(line, boxX + 30, y);
         
         ctx.textAlign = 'center';
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = `bold ${Math.floor(12 * scale)}px Arial`;
+        ctx.font = `bold ${Math.floor(12 * btns.scale)}px Arial`;
         ctx.fillText("[ Tap to Continue ]", GAME_W/2, boxY + boxH - 25);
         ctx.textBaseline = 'alphabetic';
     }
 }
 
-// --- Smooth Isometric Loading Screen ---
+// --- Isometric Loading Screen ---
 const tips = [
     "Tip: Craft a Pickaxe to mine stone faster!",
     "Tip: Place Campfires to light up the night.",
@@ -972,8 +848,7 @@ for(let i=0; i<50; i++) {
         y: Math.random() * GAME_H,
         vy: -0.5 - Math.random() * 1,
         size: 1 + Math.random() * 2,
-        alpha: Math.random() * 0.5,
-        color: `hsla(${Math.random() * 60 + 80}, 50%, 60%, ${Math.random() * 0.5})` // Greenish-Yellow Hues
+        alpha: Math.random() * 0.5
     });
 }
 
@@ -981,14 +856,12 @@ function renderLoadingScreen(frameCount) {
     ctx.fillStyle = '#121809';
     ctx.fillRect(0, 0, GAME_W, GAME_H);
 
-    // Smooth Glowing Particles
+    // Particles
     particles.forEach(p => {
         p.y += p.vy;
         if (p.y < 0) { p.y = GAME_H; p.x = Math.random() * GAME_W; }
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillStyle = `rgba(162, 209, 91, ${p.alpha})`;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
     });
 
     // Isometric 4 Squares
@@ -1048,7 +921,7 @@ function loop(now) {
     requestAnimationFrame(loop);
 }
 
-// --- Initialization with 5s Minimum Wait ---
+// --- Initialization ---
 let loadingFrame = 0;
 function loadingLoop() {
     loadingFrame++;
@@ -1057,9 +930,7 @@ function loadingLoop() {
 }
 loadingLoop();
 
-const minLoadTime = new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds
-
-Promise.all([loadAssets(), minLoadTime]).then(() => {
+loadAssets().then(() => {
     // Stop loading loop, start game loop
     lastTime = performance.now();
     requestAnimationFrame(loop);
