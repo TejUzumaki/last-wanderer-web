@@ -30,9 +30,10 @@ function loadAssets() {
     let promises = [];
     assetList.forEach(name => {
         uiAssets[name] = new Image();
-        let p = new Promise((resolve, reject) => {
+        // Using allSettled logic: if one fails, we still start the game
+        let p = new Promise((resolve) => {
             uiAssets[name].onload = () => resolve();
-            uiAssets[name].onerror = () => reject(new Error(`Failed to load ${name}`));
+            uiAssets[name].onerror = () => { console.warn(`Missing asset: ${name}`); resolve(); };
         });
         uiAssets[name].src = `assets/ui/${name}.svg`;
         promises.push(p);
@@ -41,13 +42,13 @@ function loadAssets() {
 }
 
 function drawUIImage(imgName, cx, cy, size) {
-    if (uiAssets[imgName] && uiAssets[imgName].complete) {
+    if (uiAssets[imgName] && uiAssets[imgName].complete && uiAssets[imgName].naturalWidth !== 0) {
         ctx.drawImage(uiAssets[imgName], cx - size/2, cy - size/2, size, size);
     }
 }
 
 function drawUIRect(imgName, x, y, w, h) {
-    if (uiAssets[imgName] && uiAssets[imgName].complete) {
+    if (uiAssets[imgName] && uiAssets[imgName].complete && uiAssets[imgName].naturalWidth !== 0) {
         ctx.drawImage(uiAssets[imgName], x, y, w, h);
     }
 }
@@ -95,11 +96,9 @@ for (let y = 0; y < game.mapH; y++) {
 }
 
 // Place Handcrafted Entities
-// 1. The Spirit of Nature (NPC)
 game.entities.push({ type: 'spirit', tx: 13, ty: 11, swayPhase: 0, talked: false });
 game.obstacles.push("13,11");
 
-// 2. Dense Forest (Top-Left)
 for(let i=0; i<15; i++) {
     let tx = Math.floor(Math.random() * 8) + 1;
     let ty = Math.floor(Math.random() * 8) + 1;
@@ -109,7 +108,6 @@ for(let i=0; i<15; i++) {
     }
 }
 
-// 3. Ruined Settlement (Top-Right)
 const ruinTypes = ['ruin_wall', 'ruin_wall', 'metal', 'bush'];
 for(let i=0; i<12; i++) {
     let tx = Math.floor(Math.random() * 8) + 14;
@@ -120,7 +118,6 @@ for(let i=0; i<12; i++) {
     }
 }
 
-// 4. Scattered Rocks (Bottom-Left)
 for(let i=0; i<6; i++) {
     let tx = Math.floor(Math.random() * 8) + 1;
     let ty = Math.floor(Math.random() * 8) + 14;
@@ -166,7 +163,6 @@ function findPath(start, end) {
     return [];
 }
 
-// Projections & Camera Vectors
 const p = game.player;
 const camInit = [p.x - 10, 12, p.z - 10];
 let dx = p.x - camInit[0], dz = p.z - camInit[2], dy = 0 - camInit[1];
@@ -239,12 +235,11 @@ function addShadow(faces, px, pz, r, op=80) {
     faces.push({ verts: [[px-r, 0.01, pz-r], [px+r, 0.01, pz-r], [px+r, 0.01, pz+r], [px-r, 0.01, pz+r]], color: `rgba(18,24,9,${(op/255)*nf})` });
 }
 
-// --- Interaction Logic ---
 function checkToolRequirement(entity) {
     let selectedItem = game.hotbar[game.selectedSlot];
     if ((entity.type === 'rock' || entity.type === 'ruin_wall') && selectedItem !== 'Pickaxe') {
         game.feedbackTexts.push({ text: 'Faster with Pickaxe!', x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
-        return false; // Prevent auto-pathing for now, let them break by hand slowly
+        return false;
     }
     return true;
 }
@@ -317,18 +312,14 @@ function handleBreak() {
     }
 }
 
-// Ergonomic Mobile Controls Placement
 function getButtons() {
     let scale = Math.min(GAME_W / 1280, GAME_H / 720);
     scale = Math.max(0.75, Math.min(scale, 1.3));
-
     let btnBreakSize = 84 * scale;
     let btnSmallSize = 68 * scale;
     let padding = 24 * scale;
-
     let baseRight = GAME_W - padding - btnBreakSize/2;
     let baseBottom = GAME_H - padding - btnBreakSize/2;
-
     return {
         break: { x: baseRight, y: baseBottom, r: btnBreakSize / 2 },
         jump: { x: baseRight - (95 * scale), y: baseBottom - (20 * scale), r: btnSmallSize / 2 },
@@ -338,11 +329,9 @@ function getButtons() {
     };
 }
 
-// Touch & Pointer Controls
 canvas.addEventListener('pointerdown', e => {
     e.preventDefault();
     let x = e.clientX, y = e.clientY;
-    
     if (game.state === 'menu') { game.state = 'playing'; return; }
     if (game.state === 'dialogue') { game.state = 'playing'; return; }
 
@@ -361,11 +350,9 @@ canvas.addEventListener('pointerdown', e => {
                 }
             }
         }
-        game.state = 'playing'; 
-        return;
+        game.state = 'playing'; return;
     }
 
-    // Hotbar Selection
     let btns = getButtons();
     let hbSize = Math.floor(58 * btns.scale);
     let totalW = 5 * hbSize;
@@ -375,13 +362,11 @@ canvas.addEventListener('pointerdown', e => {
     if (y > hbY && y < hbY + hbSize) {
         for (let i = 0; i < 5; i++) {
             if (x > hbStartX + i*hbSize && x < hbStartX + i*hbSize + hbSize) {
-                game.selectedSlot = i;
-                return;
+                game.selectedSlot = i; return;
             }
         }
     }
 
-    // Action Buttons
     if (x > GAME_W - 260 * btns.scale) {
         if (Math.hypot(x - btns.break.x, y - btns.break.y) < btns.break.r) { handleBreak(); return; }
         if (Math.hypot(x - btns.jump.x, y - btns.jump.y) < btns.jump.r) { if (game.player.jumpY === 0) game.player.jumpY = 0.6; return; }
@@ -392,11 +377,8 @@ canvas.addEventListener('pointerdown', e => {
     let selectedItem = game.hotbar[game.selectedSlot];
     let isPlacing = (selectedItem === 'Torch' || selectedItem === 'Campfire') && game.inventory[selectedItem] > 0;
 
-    // Dynamic Touch Joystick
     if (!isPlacing && x < GAME_W / 2) {
-        game.joy.active = true;
-        game.joy.x = x; game.joy.y = y;
-        game.joy.dx = 0; game.joy.dy = 0;
+        game.joy.active = true; game.joy.x = x; game.joy.y = y; game.joy.dx = 0; game.joy.dy = 0;
     } else {
         handleMoveClick(x, y);
     }
@@ -416,8 +398,7 @@ canvas.addEventListener('pointermove', e => {
 
 canvas.addEventListener('pointerup', e => {
     e.preventDefault();
-    game.joy.active = false;
-    game.joy.dx = 0; game.joy.dy = 0;
+    game.joy.active = false; game.joy.dx = 0; game.joy.dy = 0;
 });
 
 window.addEventListener('keydown', e => {
@@ -446,7 +427,6 @@ function update(dt) {
     while (ad < -Math.PI) ad += 2 * Math.PI;
     p.angle += ad * Math.min(1.0, dt * 10.0);
 
-    // Check NPC proximity
     let spirit = game.entities.find(e => e.type === 'spirit');
     if (spirit && !spirit.talked) {
         let distToSpirit = Math.hypot(p.x - (spirit.tx+0.5), p.z - (spirit.ty+0.5));
@@ -499,7 +479,6 @@ function update(dt) {
             let ddx = (e.tx+0.5) - p.x, ddz = (e.ty+0.5) - p.z;
             p.targetAngle = Math.atan2(ddx, ddz);
             
-            // Tool Logic & Stone Yield
             let gatherTime = 1.0;
             let yieldAmount = 1;
             let selectedItem = game.hotbar[game.selectedSlot];
@@ -543,10 +522,9 @@ function render() {
 
     let btns = getButtons();
 
-    // Start Screen Menu
     if (game.state === 'menu') {
         let frameW = Math.min(GAME_W * 0.95, 640);
-        let frameH = frameW * (120 / 160); // 480
+        let frameH = frameW * (120 / 160);
         let frameX = (GAME_W - frameW) / 2;
         let frameY = (GAME_H - frameH) / 2;
         drawUIRect('ui_main_menu_frame', frameX, frameY, frameW, frameH);
@@ -562,7 +540,7 @@ function render() {
         ctx.fillText('THE LAST WANDERER', GAME_W/2, titleCenterY);
         
         let btnW = frameW * 0.5;
-        let btnH = btnW * (40 / 120); // 1/3 ratio
+        let btnH = btnW * (40 / 120);
         let btnX = (GAME_W - btnW) / 2;
         let btnY = frameY + frameH * 0.52;
         drawUIRect('menu_button_start', btnX, btnY, btnW, btnH);
@@ -578,7 +556,6 @@ function render() {
     let cam = [p.x - 10, 12, p.z - 10];
     let faces = [];
 
-    // Terrain Rendering
     for (let ty = 0; ty < game.mapH; ty++) {
         for (let tx = 0; tx < game.mapW; tx++) {
             let tt = game.map[ty*game.mapW+tx];
@@ -588,7 +565,7 @@ function render() {
             let hL = getHeight(tx-1, ty);
             if (h < hL) faces.push({ verts: [[tx, h, ty], [tx, hL, ty], [tx, hL, ty+1], [tx, h, ty+1]], color: shade(c, 0.6, tx, (h+hL)/2, ty+0.5) });
             let hR = getHeight(tx+1, ty);
-            if (h < hR) faces.push({ verts: [[tx+1, h, ty], [tx+1, hR, ty], [tx+1, hR, ty+1], [tx+1, h, ty+1)], color: shade(c, 0.6, tx+1, (h+hR)/2, ty+0.5) });
+            if (h < hR) faces.push({ verts: [[tx+1, h, ty], [tx+1, hR, ty], [tx+1, hR, ty+1], [tx+1, h, ty+1]], color: shade(c, 0.6, tx+1, (h+hR)/2, ty+0.5) });
             let hF = getHeight(tx, ty-1);
             if (h < hF) faces.push({ verts: [[tx, h, ty], [tx+1, h, ty], [tx+1, hF, ty], [tx, hF, ty]], color: shade(c, 0.5, tx+0.5, (h+hF)/2, ty) });
             let hB = getHeight(tx, ty+1);
@@ -604,7 +581,6 @@ function render() {
         faces.push({ verts: [[tx+0.1,h,ty+0.1], [tx+0.9,h,ty+0.1], [tx+0.9,h,ty+0.9], [tx+0.1,h,ty+0.9]], color: `rgba(162,209,91,0.6)` });
     }
 
-    // Entity Rendering
     game.entities.forEach(e => {
         let h = getHeight(e.tx, e.ty);
         if (e.type === 'tree') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.7);
@@ -624,23 +600,16 @@ function render() {
         else if (e.type === 'torch') { addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.1, 1.0, 0.1, [92, 64, 51]); addCube(faces, e.tx+0.5, h+1.0, e.ty+0.5, 0.25, 0.25, 0.25, [255, 200, 0]); }
         else if (e.type === 'campfire') { addCube(faces, e.tx+0.5, h+0.1, e.ty+0.5, 0.7, 0.15, 0.7, [80, 80, 80]); addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 0.4, 0.3, 0.4, [255, 140, 0]); }
         else if (e.type === 'spirit') {
-            // Spirit of Nature Model
             let baseY = h;
-            // Legs
             addCube(faces, e.tx+0.35, baseY+0.25, e.ty+0.5, 0.2, 0.5, 0.2, [34, 43, 20]);
             addCube(faces, e.tx+0.65, baseY+0.25, e.ty+0.5, 0.2, 0.5, 0.2, [34, 43, 20]);
-            // Torso (Vine Dress)
             addCube(faces, e.tx+0.5, baseY+0.8, e.ty+0.5, 0.5, 0.6, 0.3, [74, 93, 35]);
-            // Head
             addCube(faces, e.tx+0.5, baseY+1.4, e.ty+0.5, 0.3, 0.3, 0.3, [210, 160, 110]);
-            // Vine Hair
             addCube(faces, e.tx+0.5, baseY+1.5, e.ty+0.5, 0.35, 0.1, 0.35, [34, 43, 20]);
-            // Flower (White)
             addCube(faces, e.tx+0.5, baseY+1.6, e.ty+0.5, 0.1, 0.1, 0.1, [255, 255, 255]);
         }
     });
 
-    // Character Model
     let playerY = p.y;
     addShadow(faces, p.x, p.z, 0.4, 80 * (1 - Math.min(1, p.jumpY / 0.6)));
     let breathe = 0, ls = 0, asr = 0, asl = 0;
@@ -656,30 +625,22 @@ function render() {
     let lao = rotateY(-0.35,0,0,p.angle); addCube(faces, p.x+lao[0], shoulderY, p.z+lao[2], 0.2, 0.5, 0.2, [136,176,75], -asl, p.angle, 0, -0.25, 0);
     addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [210,160,110], 0, p.angle);
 
-    // 3D Tool Equipping (Rotated 90 degrees using local offsets)
     let equippedTool = game.hotbar[game.selectedSlot];
     if (equippedTool === 'Axe') {
         let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
-        // Handle
         addCube(faces, hx, hy, hz, 0.08, 0.4, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.2, 0);
-        // Axe Head (Offset to the side to look like an axe, not a mace)
         addCube(faces, hx, hy, hz, 0.25, 0.1, 0.15, [130, 130, 130], -asr, p.angle, 0.15, 0.1, 0);
     } else if (equippedTool === 'Pickaxe') {
         let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
-        // Handle
         addCube(faces, hx, hy, hz, 0.08, 0.4, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.2, 0);
-        // Pick Head (Two sides)
         addCube(faces, hx, hy, hz, 0.2, 0.08, 0.1, [130, 130, 130], -asr, p.angle, 0.15, 0.1, 0);
         addCube(faces, hx, hy, hz, 0.2, 0.08, 0.1, [130, 130, 130], -asr, p.angle, -0.15, 0.1, 0);
     } else if (equippedTool === 'Torch') {
         let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
-        // Stick
         addCube(faces, hx, hy, hz, 0.08, 0.3, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.15, 0);
-        // Flame
         addCube(faces, hx, hy, hz, 0.15, 0.15, 0.15, [255, 200, 0], -asr, p.angle, 0, -0.35, 0);
     }
 
-    // Rasterize Sorted Faces
     let renderables = [];
     faces.forEach(f => {
         let pv = []; let valid = true;
@@ -689,7 +650,6 @@ function render() {
     renderables.sort((a,b) => b.z - a.z);
     renderables.forEach(r => { ctx.beginPath(); ctx.moveTo(r.verts[0][0], r.verts[0][1]); for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]); ctx.closePath(); ctx.fillStyle = r.color; ctx.fill(); });
 
-    // Floating Pickup Text Banners
     game.feedbackTexts.forEach(ft => {
         ctx.globalAlpha = Math.max(0, ft.timer / 2.0);
         let bw = 130 * btns.scale, bh = 30 * btns.scale;
@@ -703,7 +663,6 @@ function render() {
     ctx.globalAlpha = 1.0;
     ctx.textBaseline = 'alphabetic';
 
-    // Centered Hotbar
     let hbSize = Math.floor(58 * btns.scale);
     let totalW = 5 * hbSize;
     let hbStartX = (GAME_W / 2) - (totalW / 2);
@@ -726,14 +685,13 @@ function render() {
         
         let count = game.inventory[itemName];
         if (count !== undefined && count > 0) {
-            ctx.fillStyle = '#A2D15B'; // Bright Lime Green
+            ctx.fillStyle = '#A2D15B';
             ctx.font = `bold ${Math.floor(11 * btns.scale)}px Arial`; 
             ctx.textAlign = 'right';
-            ctx.fillText(count, hx + hbSize - 6, hbY + 15); // Top-Right
+            ctx.fillText(count, hx + hbSize - 6, hbY + 15);
         }
     }
 
-    // Touch Action Buttons
     if (game.state === 'playing') {
         let jx = game.joy.active ? game.joy.x : 100 * btns.scale;
         let jy = game.joy.active ? game.joy.y : GAME_H - (110 * btns.scale);
@@ -750,13 +708,12 @@ function render() {
         drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, btns.inv.r * 2);
     }
 
-    // Modal Overlays
     if (game.state === 'crafting' || game.state === 'inventory') {
         ctx.fillStyle = 'rgba(18,24,9,0.75)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
         
         let winW = Math.min(GAME_W * 0.95, 580);
-        let winH = winW * (100 / 120); // Increased height by 25%
+        let winH = winW * (100 / 120);
         let winX = (GAME_W / 2) - (winW / 2);
         let winY = (GAME_H / 2) - (winH / 2);
         
@@ -772,14 +729,13 @@ function render() {
         ctx.font = `900 ${Math.floor(winW * 0.045)}px "Courier New", monospace`;
         ctx.fillText(game.state.toUpperCase(), GAME_W/2, titleCenterY);
 
-        // Inventory Popup Grid
         if (game.state === 'inventory') {
             let items = Object.keys(game.inventory);
             let cols = 4;
             let gridW = winW * 0.8;
             let boxW = gridW / cols;
             let startX = GAME_W/2 - gridW/2;
-            let startY = winY + winH * 0.30; // Start below banner
+            let startY = winY + winH * 0.30;
             
             for(let i=0; i<items.length; i++) {
                 let col = i % cols;
@@ -795,15 +751,14 @@ function render() {
                 if(game.inventory[itemName] > 0 || ['Wood','Stone','Metal','Fiber'].includes(itemName)) {
                     drawUIImage('item_' + itemName.toLowerCase(), cx, cy, boxW * 0.65);
                     
-                    ctx.fillStyle = '#A2D15B'; // Bright Lime Green
+                    ctx.fillStyle = '#A2D15B';
                     ctx.font = `bold ${Math.floor(winW * 0.03)}px Arial`; 
                     ctx.textAlign = 'right';
-                    ctx.fillText(game.inventory[itemName], ix + boxW - 8, iy + 15); // Top-Right
+                    ctx.fillText(game.inventory[itemName], ix + boxW - 8, iy + 15);
                 }
             }
         }
 
-        // Crafting Menu List
         if (game.state === 'crafting') {
             game.craftSlots = [];
             let listW = winW * 0.85;
@@ -822,12 +777,12 @@ function render() {
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#FFFFFF';
                 ctx.font = `900 ${Math.floor(winW * 0.035)}px "Courier New", monospace`;
-                ctx.fillText(rec.name, sx + rowH * 1.2, sy + rowH * 0.35); // Pushed text right
+                ctx.fillText(rec.name, sx + rowH * 1.2, sy + rowH * 0.35);
                 
                 let costStr = Object.keys(rec.cost).map(r => `${r}:${rec.cost[r]}`).join(' ');
                 ctx.fillStyle = '#88B04B';
                 ctx.font = `900 ${Math.floor(winW * 0.025)}px "Courier New", monospace`;
-                ctx.fillText(costStr, sx + rowH * 1.2, sy + rowH * 0.7); // Pushed text right
+                ctx.fillText(costStr, sx + rowH * 1.2, sy + rowH * 0.7);
                 
                 game.craftSlots.push({ recipe: rec, x: sx, y: sy, w: listW, h: rowH });
             });
@@ -835,7 +790,6 @@ function render() {
         ctx.textBaseline = 'alphabetic'; 
     }
 
-    // Dialogue Box
     if (game.state === 'dialogue' && game.dialogue) {
         ctx.fillStyle = 'rgba(0,0,0,0.7)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
@@ -855,7 +809,6 @@ function render() {
         
         ctx.fillStyle = '#A2D15B';
         ctx.font = `${Math.floor(16 * btns.scale)}px Arial`;
-        // Simple word wrap
         let words = game.dialogue.text.split(' ');
         let line = '';
         let y = boxY + 60;
@@ -879,6 +832,87 @@ function render() {
     }
 }
 
+// --- Isometric Loading Screen ---
+const tips = [
+    "Tip: Craft a Pickaxe to mine stone faster!",
+    "Tip: Place Campfires to light up the night.",
+    "Tip: The Spirit of Nature guides you.",
+    "Tip: Trees yield more wood with an Axe.",
+    "Tip: Explore the ruins to find metal scrap."
+];
+let currentTip = tips[Math.floor(Math.random() * tips.length)];
+let particles = [];
+for(let i=0; i<50; i++) {
+    particles.push({
+        x: Math.random() * GAME_W,
+        y: Math.random() * GAME_H,
+        vy: -0.5 - Math.random() * 1,
+        size: 1 + Math.random() * 2,
+        alpha: Math.random() * 0.5
+    });
+}
+
+function renderLoadingScreen(frameCount) {
+    ctx.fillStyle = '#121809';
+    ctx.fillRect(0, 0, GAME_W, GAME_H);
+
+    // Particles
+    particles.forEach(p => {
+        p.y += p.vy;
+        if (p.y < 0) { p.y = GAME_H; p.x = Math.random() * GAME_W; }
+        ctx.fillStyle = `rgba(162, 209, 91, ${p.alpha})`;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+    });
+
+    // Isometric 4 Squares
+    let cx = GAME_W / 2;
+    let cy = GAME_H / 2 - 40;
+    let w = 80, h = 40;
+    let activeTile = Math.floor(frameCount / 30) % 4;
+    
+    const tiles = [
+        { gx: 0, gy: 0, color: '#4A5D23', name: 'Meadow' },
+        { gx: 1, gy: 0, color: '#3A5A1E', name: 'Forest' },
+        { gx: 1, gy: 1, color: '#5A5550', name: 'Ruins' },
+        { gx: 0, gy: 1, color: '#2D506E', name: 'Lake' }
+    ];
+
+    tiles.forEach((tile, i) => {
+        let isoX = cx + (tile.gx - tile.gy) * (w / 2);
+        let isoY = cy + (tile.gx + tile.gy) * (h / 2);
+        
+        ctx.beginPath();
+        ctx.moveTo(isoX, isoY);
+        ctx.lineTo(isoX + w/2, isoY + h/2);
+        ctx.lineTo(isoX, isoY + h);
+        ctx.lineTo(isoX - w/2, isoY + h/2);
+        ctx.closePath();
+        
+        ctx.fillStyle = tile.color;
+        ctx.fill();
+        
+        if (i === activeTile) {
+            ctx.strokeStyle = '#A2D15B';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(tile.name, isoX, isoY - 10);
+        }
+    });
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 24px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('LOADING...', GAME_W / 2, cy + h * 2 + 30);
+
+    ctx.fillStyle = '#88B04B';
+    ctx.font = '16px Arial';
+    ctx.fillText(currentTip, GAME_W / 2, GAME_H - 50);
+}
+
 function loop(now) {
     let dt = (now - lastTime) / 1000;
     lastTime = now;
@@ -887,19 +921,17 @@ function loop(now) {
     requestAnimationFrame(loop);
 }
 
-// --- Initialize Game with Preloader ---
-ctx.fillStyle = '#121809';
-ctx.fillRect(0, 0, GAME_W, GAME_H);
-ctx.fillStyle = '#88B04B';
-ctx.font = '900 24px "Courier New", monospace';
-ctx.textAlign = 'center';
-ctx.fillText('LOADING...', GAME_W/2, GAME_H/2);
+// --- Initialization ---
+let loadingFrame = 0;
+function loadingLoop() {
+    loadingFrame++;
+    renderLoadingScreen(loadingFrame);
+    requestAnimationFrame(loadingLoop);
+}
+loadingLoop();
 
 loadAssets().then(() => {
+    // Stop loading loop, start game loop
     lastTime = performance.now();
     requestAnimationFrame(loop);
-}).catch(err => {
-    console.error("Asset loading failed:", err);
-    ctx.fillStyle = 'red';
-    ctx.fillText('Failed to load assets', GAME_W/2, GAME_H/2 + 40);
 });
