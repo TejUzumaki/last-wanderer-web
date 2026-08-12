@@ -68,7 +68,8 @@ const game = {
     craftSlots: [], timeOfDay: 0.35, ambientLight: 1.0,
     joy: { active: false, x: 0, y: 0, dx: 0, dy: 0 },
     hotbar: ['Hands', 'Axe', 'Pickaxe', 'Torch', 'Campfire'],
-    selectedSlot: 0
+    selectedSlot: 0,
+    dialogue: null
 };
 
 function getHeight(tx, ty) {
@@ -79,28 +80,53 @@ function getHeight(tx, ty) {
     return Math.round(h) * 0.25; 
 }
 
-// Map Initialization
+// Handcrafted Map Zones
 for (let y = 0; y < game.mapH; y++) {
     for (let x = 0; x < game.mapW; x++) {
-        if (x >= 14 && x <= 16 && y >= 14 && y <= 16) game.map.push(2);
-        else if (x >= 4 && x <= 7 && y >= 4 && y <= 7) game.map.push(1);
-        else {
-            game.map.push(0);
+        if (x >= 15 && x <= 18 && y >= 15 && y <= 18) {
+            game.map.push(2); // Lake
+        } else if (x >= 4 && x <= 7 && y >= 4 && y <= 7) {
+            game.map.push(1); // Dirt Patch
+        } else {
+            game.map.push(0); // Grass
             if (Math.random() < 0.2) game.grassTufts.push({ x: x + 0.2 + Math.random()*0.6, z: y + 0.2 + Math.random()*0.6 });
         }
     }
 }
 
-const propTypes = ['tree', 'tree', 'tree', 'rock', 'bush', 'metal', 'ruin_wall'];
-for (let i = 0; i < 24; i++) {
-    while (true) {
-        let tx = Math.floor(Math.random() * 20) + 1;
-        let ty = Math.floor(Math.random() * 20) + 1;
-        if (game.map[ty*game.mapW+tx] === 0 && !game.obstacles.includes(`${tx},${ty}`)) {
-            game.entities.push({ type: propTypes[Math.floor(Math.random()*propTypes.length)], tx, ty, swayPhase: Math.random() * 6 });
-            game.obstacles.push(`${tx},${ty}`);
-            break;
-        }
+// Place Handcrafted Entities
+// 1. The Spirit of Nature (NPC)
+game.entities.push({ type: 'spirit', tx: 13, ty: 11, swayPhase: 0, talked: false });
+game.obstacles.push("13,11");
+
+// 2. Dense Forest (Top-Left)
+for(let i=0; i<15; i++) {
+    let tx = Math.floor(Math.random() * 8) + 1;
+    let ty = Math.floor(Math.random() * 8) + 1;
+    if (game.map[ty*game.mapW+tx] === 0 && !game.obstacles.includes(`${tx},${ty}`)) {
+        game.entities.push({ type: 'tree', tx, ty, swayPhase: Math.random() * 6 });
+        game.obstacles.push(`${tx},${ty}`);
+    }
+}
+
+// 3. Ruined Settlement (Top-Right)
+const ruinTypes = ['ruin_wall', 'ruin_wall', 'metal', 'bush'];
+for(let i=0; i<12; i++) {
+    let tx = Math.floor(Math.random() * 8) + 14;
+    let ty = Math.floor(Math.random() * 8) + 1;
+    if (game.map[ty*game.mapW+tx] === 0 && !game.obstacles.includes(`${tx},${ty}`)) {
+        game.entities.push({ type: ruinTypes[Math.floor(Math.random()*ruinTypes.length)], tx, ty, swayPhase: Math.random() * 6 });
+        game.obstacles.push(`${tx},${ty}`);
+    }
+}
+
+// 4. Scattered Rocks (Bottom-Left)
+for(let i=0; i<6; i++) {
+    let tx = Math.floor(Math.random() * 8) + 1;
+    let ty = Math.floor(Math.random() * 8) + 14;
+    if (game.map[ty*game.mapW+tx] === 0 && !game.obstacles.includes(`${tx},${ty}`)) {
+        game.entities.push({ type: 'rock', tx, ty, swayPhase: 0 });
+        game.obstacles.push(`${tx},${ty}`);
     }
 }
 
@@ -217,8 +243,8 @@ function addShadow(faces, px, pz, r, op=80) {
 function checkToolRequirement(entity) {
     let selectedItem = game.hotbar[game.selectedSlot];
     if ((entity.type === 'rock' || entity.type === 'ruin_wall') && selectedItem !== 'Pickaxe') {
-        game.feedbackTexts.push({ text: 'Need Pickaxe!', x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
-        return false;
+        game.feedbackTexts.push({ text: 'Faster with Pickaxe!', x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
+        return false; // Prevent auto-pathing for now, let them break by hand slowly
     }
     return true;
 }
@@ -264,12 +290,12 @@ function handleBreak() {
     let p = game.player;
     let closest = null, minD = 2.5;
     game.entities.forEach(e => {
-        if (e.type === 'torch' || e.type === 'campfire') return;
+        if (e.type === 'torch' || e.type === 'campfire' || e.type === 'spirit') return;
         let d = Math.hypot(p.x - (e.tx+0.5), p.z - (e.ty+0.5));
         if (d < minD) { minD = d; closest = e; }
     });
     if (closest) {
-        if (!checkToolRequirement(closest)) return; // Check tool before pathing
+        if (!checkToolRequirement(closest)) return; 
         
         let bestAdj = null, minAdjD = 999;
         for(let dx=-1; dx<=1; dx++) {
@@ -317,10 +343,8 @@ canvas.addEventListener('pointerdown', e => {
     e.preventDefault();
     let x = e.clientX, y = e.clientY;
     
-    if (game.state === 'menu') { 
-        game.state = 'playing'; 
-        return; 
-    }
+    if (game.state === 'menu') { game.state = 'playing'; return; }
+    if (game.state === 'dialogue') { game.state = 'playing'; return; }
 
     if (game.state === 'crafting' || game.state === 'inventory') {
         if (game.state === 'crafting') {
@@ -410,7 +434,6 @@ function update(dt) {
     game.frameCount++;
     if (game.state !== 'playing') return;
     
-    // FIXED: Math.PI typo
     game.timeOfDay = (game.timeOfDay + dt * 0.008) % 1.0;
     let lv = Math.sin(game.timeOfDay * Math.PI * 2 - Math.PI / 2);
     game.ambientLight = 0.35 + (lv + 1) / 2 * 0.65;
@@ -422,6 +445,17 @@ function update(dt) {
     while (ad > Math.PI) ad -= 2 * Math.PI;
     while (ad < -Math.PI) ad += 2 * Math.PI;
     p.angle += ad * Math.min(1.0, dt * 10.0);
+
+    // Check NPC proximity
+    let spirit = game.entities.find(e => e.type === 'spirit');
+    if (spirit && !spirit.talked) {
+        let distToSpirit = Math.hypot(p.x - (spirit.tx+0.5), p.z - (spirit.ty+0.5));
+        if (distToSpirit < 2.5) {
+            game.state = 'dialogue';
+            game.dialogue = { speaker: "Spirit of Nature", text: "Welcome, Wanderer. The Earth has healed, but the remnants of the past remain. Seek the Ruins to the East, and gather the lost materials." };
+            spirit.talked = true;
+        }
+    }
 
     let isMovingJoy = game.joy.active && (Math.abs(game.joy.dx) > 4 || Math.abs(game.joy.dy) > 4);
     if (isMovingJoy) {
@@ -465,23 +499,27 @@ function update(dt) {
             let ddx = (e.tx+0.5) - p.x, ddz = (e.ty+0.5) - p.z;
             p.targetAngle = Math.atan2(ddx, ddz);
             
-            // Tool Logic
+            // Tool Logic & Stone Yield
             let gatherTime = 1.0;
-            if (e.type === 'tree' && game.hotbar[game.selectedSlot] === 'Axe') gatherTime = 0.5;
+            let yieldAmount = 1;
+            let selectedItem = game.hotbar[game.selectedSlot];
+            
+            if (e.type === 'tree' && selectedItem === 'Axe') gatherTime = 0.5;
+            if (e.type === 'rock' && selectedItem === 'Pickaxe') { gatherTime = 0.5; yieldAmount = 2; }
+            if (e.type === 'ruin_wall' && selectedItem === 'Pickaxe') { gatherTime = 0.5; yieldAmount = 2; }
             
             if (!p.gatherTimer) p.gatherTimer = gatherTime;
             p.gatherTimer -= dt;
             if (p.gatherTimer <= 0) {
                 if (e.type === 'tree') {
-                    let yieldAmount = 1;
-                    if (game.hotbar[game.selectedSlot] === 'Axe') yieldAmount = 2;
+                    if (selectedItem === 'Axe') yieldAmount = 2;
                     game.inventory.Wood += yieldAmount; 
                     game.feedbackTexts.push({text:`+${yieldAmount} Wood`, x:GAME_W/2, y:GAME_H/2, timer:2.0});
                 }
-                else if (e.type === 'rock') { game.inventory.Stone++; game.feedbackTexts.push({text:'+1 Stone', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
-                else if (e.type === 'metal') { game.inventory.Metal++; game.feedbackTexts.push({text:'+1 Metal', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
-                else if (e.type === 'bush') { game.inventory.Fiber++; game.feedbackTexts.push({text:'+1 Fiber', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
-                else if (e.type === 'ruin_wall') { game.inventory.Stone+=2; game.feedbackTexts.push({text:'+2 Stone', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                else if (e.type === 'rock') { game.inventory.Stone += yieldAmount; game.feedbackTexts.push({text:`+${yieldAmount} Stone`, x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                else if (e.type === 'metal') { game.inventory.Metal += yieldAmount; game.feedbackTexts.push({text:`+${yieldAmount} Metal`, x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                else if (e.type === 'bush') { game.inventory.Fiber += yieldAmount; game.feedbackTexts.push({text:`+${yieldAmount} Fiber`, x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                else if (e.type === 'ruin_wall') { game.inventory.Stone += yieldAmount; game.feedbackTexts.push({text:`+${yieldAmount} Stone`, x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
                 game.entities.splice(game.entities.indexOf(e), 1);
                 game.obstacles.splice(game.obstacles.indexOf(`${e.tx},${e.ty}`), 1);
                 game.pendingInteraction = null; p.state = 'idle'; game.destinationMarker = null;
@@ -550,7 +588,7 @@ function render() {
             let hL = getHeight(tx-1, ty);
             if (h < hL) faces.push({ verts: [[tx, h, ty], [tx, hL, ty], [tx, hL, ty+1], [tx, h, ty+1]], color: shade(c, 0.6, tx, (h+hL)/2, ty+0.5) });
             let hR = getHeight(tx+1, ty);
-            if (h < hR) faces.push({ verts: [[tx+1, h, ty], [tx+1, hR, ty], [tx+1, hR, ty+1], [tx+1, h, ty+1]], color: shade(c, 0.6, tx+1, (h+hR)/2, ty+0.5) });
+            if (h < hR) faces.push({ verts: [[tx+1, h, ty], [tx+1, hR, ty], [tx+1, hR, ty+1], [tx+1, h, ty+1)], color: shade(c, 0.6, tx+1, (h+hR)/2, ty+0.5) });
             let hF = getHeight(tx, ty-1);
             if (h < hF) faces.push({ verts: [[tx, h, ty], [tx+1, h, ty], [tx+1, hF, ty], [tx, hF, ty]], color: shade(c, 0.5, tx+0.5, (h+hF)/2, ty) });
             let hB = getHeight(tx, ty+1);
@@ -571,6 +609,7 @@ function render() {
         let h = getHeight(e.tx, e.ty);
         if (e.type === 'tree') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.7);
         else if (['rock','ruin_wall'].includes(e.type)) addShadow(faces, e.tx+0.5, e.ty+0.5, 0.6);
+        else if (e.type === 'spirit') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.4);
         else if (e.type !== 'torch' && e.type !== 'campfire') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.4);
         
         if (e.type === 'tree') { 
@@ -584,6 +623,21 @@ function render() {
         else if (e.type === 'ruin_wall') addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.8, 1.0, 0.3, [90, 85, 80]);
         else if (e.type === 'torch') { addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.1, 1.0, 0.1, [92, 64, 51]); addCube(faces, e.tx+0.5, h+1.0, e.ty+0.5, 0.25, 0.25, 0.25, [255, 200, 0]); }
         else if (e.type === 'campfire') { addCube(faces, e.tx+0.5, h+0.1, e.ty+0.5, 0.7, 0.15, 0.7, [80, 80, 80]); addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 0.4, 0.3, 0.4, [255, 140, 0]); }
+        else if (e.type === 'spirit') {
+            // Spirit of Nature Model
+            let baseY = h;
+            // Legs
+            addCube(faces, e.tx+0.35, baseY+0.25, e.ty+0.5, 0.2, 0.5, 0.2, [34, 43, 20]);
+            addCube(faces, e.tx+0.65, baseY+0.25, e.ty+0.5, 0.2, 0.5, 0.2, [34, 43, 20]);
+            // Torso (Vine Dress)
+            addCube(faces, e.tx+0.5, baseY+0.8, e.ty+0.5, 0.5, 0.6, 0.3, [74, 93, 35]);
+            // Head
+            addCube(faces, e.tx+0.5, baseY+1.4, e.ty+0.5, 0.3, 0.3, 0.3, [210, 160, 110]);
+            // Vine Hair
+            addCube(faces, e.tx+0.5, baseY+1.5, e.ty+0.5, 0.35, 0.1, 0.35, [34, 43, 20]);
+            // Flower (White)
+            addCube(faces, e.tx+0.5, baseY+1.6, e.ty+0.5, 0.1, 0.1, 0.1, [255, 255, 255]);
+        }
     });
 
     // Character Model
@@ -602,13 +656,27 @@ function render() {
     let lao = rotateY(-0.35,0,0,p.angle); addCube(faces, p.x+lao[0], shoulderY, p.z+lao[2], 0.2, 0.5, 0.2, [136,176,75], -asl, p.angle, 0, -0.25, 0);
     addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [210,160,110], 0, p.angle);
 
-    // 3D Tool Equipping
+    // 3D Tool Equipping (Rotated 90 degrees using local offsets)
     let equippedTool = game.hotbar[game.selectedSlot];
-    if (equippedTool === 'Axe' || equippedTool === 'Pickaxe') {
-        let toolColor = [100, 70, 40]; // Wooden handle
-        addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.12, 0.4, 0.12, toolColor, -asr, p.angle, 0, -0.6, 0);
-        let headColor = [130, 130, 130]; // Stone head
-        addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.25, 0.2, 0.25, headColor, -asr, p.angle, 0, -0.8, 0);
+    if (equippedTool === 'Axe') {
+        let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
+        // Handle
+        addCube(faces, hx, hy, hz, 0.08, 0.4, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.2, 0);
+        // Axe Head (Offset to the side to look like an axe, not a mace)
+        addCube(faces, hx, hy, hz, 0.25, 0.1, 0.15, [130, 130, 130], -asr, p.angle, 0.15, 0.1, 0);
+    } else if (equippedTool === 'Pickaxe') {
+        let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
+        // Handle
+        addCube(faces, hx, hy, hz, 0.08, 0.4, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.2, 0);
+        // Pick Head (Two sides)
+        addCube(faces, hx, hy, hz, 0.2, 0.08, 0.1, [130, 130, 130], -asr, p.angle, 0.15, 0.1, 0);
+        addCube(faces, hx, hy, hz, 0.2, 0.08, 0.1, [130, 130, 130], -asr, p.angle, -0.15, 0.1, 0);
+    } else if (equippedTool === 'Torch') {
+        let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
+        // Stick
+        addCube(faces, hx, hy, hz, 0.08, 0.3, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.15, 0);
+        // Flame
+        addCube(faces, hx, hy, hz, 0.15, 0.15, 0.15, [255, 200, 0], -asr, p.angle, 0, -0.35, 0);
     }
 
     // Rasterize Sorted Faces
@@ -627,7 +695,7 @@ function render() {
         let bw = 130 * btns.scale, bh = 30 * btns.scale;
         drawUIRect('feedback_banner', ft.x - bw/2, ft.y - bh/2, bw, bh);
         ctx.fillStyle = '#A2D15B';
-        ctx.font = `900 ${Math.floor(13 * btns.scale)}px "Courier New", monospace`;
+        ctx.font = `bold ${Math.floor(13 * btns.scale)}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(ft.text, ft.x, ft.y);
@@ -658,8 +726,8 @@ function render() {
         
         let count = game.inventory[itemName];
         if (count !== undefined && count > 0) {
-            ctx.fillStyle = '#FFFFFF'; 
-            ctx.font = `900 ${Math.floor(11 * btns.scale)}px "Courier New", monospace`; 
+            ctx.fillStyle = '#A2D15B'; // Bright Lime Green
+            ctx.font = `bold ${Math.floor(11 * btns.scale)}px Arial`; 
             ctx.textAlign = 'right';
             ctx.fillText(count, hx + hbSize - 6, hbY + 15); // Top-Right
         }
@@ -688,14 +756,14 @@ function render() {
         ctx.fillRect(0,0,GAME_W,GAME_H);
         
         let winW = Math.min(GAME_W * 0.95, 580);
-        let winH = winW * (80 / 120); // Match SVG aspect ratio
+        let winH = winW * (100 / 120); // Increased height by 25%
         let winX = (GAME_W / 2) - (winW / 2);
         let winY = (GAME_H / 2) - (winH / 2);
         
         drawUIRect('ui_window', winX, winY, winW, winH);
         
-        let titleBoxY = winY + winH * (10 / 80);
-        let titleBoxH = winH * (14 / 80);
+        let titleBoxY = winY + winH * (10 / 100);
+        let titleBoxH = winH * (14 / 100);
         let titleCenterY = titleBoxY + titleBoxH * 0.5;
 
         ctx.fillStyle = '#FFFFFF'; 
@@ -711,7 +779,7 @@ function render() {
             let gridW = winW * 0.8;
             let boxW = gridW / cols;
             let startX = GAME_W/2 - gridW/2;
-            let startY = winY + winH * 0.35; // Start below banner
+            let startY = winY + winH * 0.30; // Start below banner
             
             for(let i=0; i<items.length; i++) {
                 let col = i % cols;
@@ -727,8 +795,8 @@ function render() {
                 if(game.inventory[itemName] > 0 || ['Wood','Stone','Metal','Fiber'].includes(itemName)) {
                     drawUIImage('item_' + itemName.toLowerCase(), cx, cy, boxW * 0.65);
                     
-                    ctx.fillStyle = '#FFFFFF'; 
-                    ctx.font = `900 ${Math.floor(winW * 0.03)}px "Courier New", monospace`; 
+                    ctx.fillStyle = '#A2D15B'; // Bright Lime Green
+                    ctx.font = `bold ${Math.floor(winW * 0.03)}px Arial`; 
                     ctx.textAlign = 'right';
                     ctx.fillText(game.inventory[itemName], ix + boxW - 8, iy + 15); // Top-Right
                 }
@@ -739,9 +807,9 @@ function render() {
         if (game.state === 'crafting') {
             game.craftSlots = [];
             let listW = winW * 0.85;
-            let rowH = winH * 0.12; // Scaled row height
-            let gap = winH * 0.03;  // Scaled gap
-            let startY = winY + winH * 0.35; // Start below banner
+            let rowH = winH * 0.12; 
+            let gap = winH * 0.03;
+            let startY = winY + winH * 0.30; 
             
             game.recipes.forEach((rec, i) => {
                 let sx = GAME_W/2 - listW/2;
@@ -754,17 +822,60 @@ function render() {
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#FFFFFF';
                 ctx.font = `900 ${Math.floor(winW * 0.035)}px "Courier New", monospace`;
-                ctx.fillText(rec.name, sx + rowH, sy + rowH * 0.35);
+                ctx.fillText(rec.name, sx + rowH * 1.2, sy + rowH * 0.35); // Pushed text right
                 
                 let costStr = Object.keys(rec.cost).map(r => `${r}:${rec.cost[r]}`).join(' ');
                 ctx.fillStyle = '#88B04B';
                 ctx.font = `900 ${Math.floor(winW * 0.025)}px "Courier New", monospace`;
-                ctx.fillText(costStr, sx + rowH, sy + rowH * 0.7);
+                ctx.fillText(costStr, sx + rowH * 1.2, sy + rowH * 0.7); // Pushed text right
                 
                 game.craftSlots.push({ recipe: rec, x: sx, y: sy, w: listW, h: rowH });
             });
         }
-        ctx.textBaseline = 'alphabetic'; // Reset baseline
+        ctx.textBaseline = 'alphabetic'; 
+    }
+
+    // Dialogue Box
+    if (game.state === 'dialogue' && game.dialogue) {
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0,0,GAME_W,GAME_H);
+        
+        let boxW = Math.min(GAME_W * 0.9, 600);
+        let boxH = 150;
+        let boxX = (GAME_W - boxW) / 2;
+        let boxY = GAME_H - boxH - 50;
+        
+        drawUIRect('ui_window', boxX, boxY, boxW, boxH);
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.font = `bold ${Math.floor(18 * btns.scale)}px Arial`;
+        ctx.fillText(game.dialogue.speaker + ":", boxX + 30, boxY + 30);
+        
+        ctx.fillStyle = '#A2D15B';
+        ctx.font = `${Math.floor(16 * btns.scale)}px Arial`;
+        // Simple word wrap
+        let words = game.dialogue.text.split(' ');
+        let line = '';
+        let y = boxY + 60;
+        for(let i=0; i<words.length; i++) {
+            let testLine = line + words[i] + ' ';
+            if (ctx.measureText(testLine).width > boxW - 60 && i > 0) {
+                ctx.fillText(line, boxX + 30, y);
+                line = words[i] + ' ';
+                y += 25;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, boxX + 30, y);
+        
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = `bold ${Math.floor(12 * btns.scale)}px Arial`;
+        ctx.fillText("[ Tap to Continue ]", GAME_W/2, boxY + boxH - 25);
+        ctx.textBaseline = 'alphabetic';
     }
 }
 
@@ -777,7 +888,6 @@ function loop(now) {
 }
 
 // --- Initialize Game with Preloader ---
-// Draw loading screen
 ctx.fillStyle = '#121809';
 ctx.fillRect(0, 0, GAME_W, GAME_H);
 ctx.fillStyle = '#88B04B';
