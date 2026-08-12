@@ -16,6 +16,7 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// --- UI Asset Preloader ---
 const uiAssets = {};
 const assetList = [
     'joystick_base', 'joystick_knob', 'btn_break', 'btn_jump', 'btn_craft', 'btn_inventory',
@@ -51,11 +52,15 @@ function drawUIRect(imgName, x, y, w, h) {
     }
 }
 
+// --- Item System ---
+const itemIds = ['Wood', 'Stone', 'Metal', 'Fiber', 'Axe', 'Pickaxe', 'Torch', 'Campfire'];
+
+// --- Game Engine Setup ---
 const game = {
     mapW: 22, mapH: 22, map: [], obstacles: [], entities: [], grassTufts: [], lights: [],
     player: { tx: 11, ty: 11, x: 11.5, z: 11.5, y: 0, jumpY: 0, path: [], state: 'idle', angle: 0, targetAngle: 0 },
     frameCount: 0, destinationMarker: null, pendingInteraction: null,
-    inv: new Array(36).fill(null), 
+    inv: new Array(36).fill(null), // 36 slots: 0-8 hotbar, 9-35 backpack
     feedbackTexts: [], particles: [], state: 'menu',
     recipes: [
         { name: 'Stone Axe', cost: { Wood: 3, Stone: 2 }, result: 'Axe', grid: ['Wood', 'Wood', null, 'Stone', 'Wood', null, null, null, null] },
@@ -69,6 +74,7 @@ const game = {
     dialogue: null
 };
 
+// Initial Items
 game.inv[0] = { item: 'Wood', count: 5 };
 game.inv[1] = { item: 'Stone', count: 5 };
 game.inv[2] = { item: 'Fiber', count: 2 };
@@ -77,12 +83,18 @@ function addItem(itemName, count) {
     let added = 0;
     for(let i=0; i<36; i++) {
         if(game.inv[i] && game.inv[i].item === itemName) {
-            game.inv[i].count += (count - added); added = count; break;
+            game.inv[i].count += (count - added);
+            added = count;
+            break;
         }
     }
     if(added < count) {
         for(let i=0; i<36; i++) {
-            if(!game.inv[i]) { game.inv[i] = { item: itemName, count: count - added }; added = count; break; }
+            if(!game.inv[i]) {
+                game.inv[i] = { item: itemName, count: count - added };
+                added = count;
+                break;
+            }
         }
     }
 }
@@ -92,7 +104,8 @@ function removeItem(itemName, count) {
     for(let i=35; i>=0; i--) {
         if(game.inv[i] && game.inv[i].item === itemName) {
             let canRemove = Math.min(count - removed, game.inv[i].count);
-            game.inv[i].count -= canRemove; removed += canRemove;
+            game.inv[i].count -= canRemove;
+            removed += canRemove;
             if(game.inv[i].count <= 0) game.inv[i] = null;
             if(removed === count) break;
         }
@@ -126,24 +139,30 @@ game.entities.push({ type: 'spirit', tx: 13, ty: 11, swayPhase: 0, talked: false
 game.obstacles.push("13,11");
 
 for(let i=0; i<15; i++) {
-    let tx = Math.floor(Math.random() * 8) + 1; let ty = Math.floor(Math.random() * 8) + 1;
+    let tx = Math.floor(Math.random() * 8) + 1;
+    let ty = Math.floor(Math.random() * 8) + 1;
     if (game.map[ty*game.mapW+tx] === 0 && !game.obstacles.includes(`${tx},${ty}`)) {
-        game.entities.push({ type: 'tree', tx, ty, swayPhase: Math.random() * 6 }); game.obstacles.push(`${tx},${ty}`);
+        game.entities.push({ type: 'tree', tx, ty, swayPhase: Math.random() * 6 });
+        game.obstacles.push(`${tx},${ty}`);
     }
 }
 
 const ruinTypes = ['ruin_wall', 'ruin_wall', 'metal', 'bush'];
 for(let i=0; i<12; i++) {
-    let tx = Math.floor(Math.random() * 8) + 14; let ty = Math.floor(Math.random() * 8) + 1;
+    let tx = Math.floor(Math.random() * 8) + 14;
+    let ty = Math.floor(Math.random() * 8) + 1;
     if (game.map[ty*game.mapW+tx] === 0 && !game.obstacles.includes(`${tx},${ty}`)) {
-        game.entities.push({ type: ruinTypes[Math.floor(Math.random()*ruinTypes.length)], tx, ty, swayPhase: Math.random() * 6 }); game.obstacles.push(`${tx},${ty}`);
+        game.entities.push({ type: ruinTypes[Math.floor(Math.random()*ruinTypes.length)], tx, ty, swayPhase: Math.random() * 6 });
+        game.obstacles.push(`${tx},${ty}`);
     }
 }
 
 for(let i=0; i<6; i++) {
-    let tx = Math.floor(Math.random() * 8) + 1; let ty = Math.floor(Math.random() * 8) + 14;
+    let tx = Math.floor(Math.random() * 8) + 1;
+    let ty = Math.floor(Math.random() * 8) + 14;
     if (game.map[ty*game.mapW+tx] === 0 && !game.obstacles.includes(`${tx},${ty}`)) {
-        game.entities.push({ type: 'rock', tx, ty, swayPhase: 0 }); game.obstacles.push(`${tx},${ty}`);
+        game.entities.push({ type: 'rock', tx, ty, swayPhase: 0 });
+        game.obstacles.push(`${tx},${ty}`);
     }
 }
 
@@ -158,7 +177,8 @@ function findPath(start, end) {
     let closed = [];
     const dirs = [[0,-1,1],[0,1,1],[-1,0,1],[1,0,1],[-1,-1,1.4],[1,-1,1.4],[-1,1,1.4],[1,1,1.4]];
     while (open.length > 0) {
-        open.sort((a, b) => a.f - b.f); let curr = open.shift();
+        open.sort((a, b) => a.f - b.f);
+        let curr = open.shift();
         if (curr.tx === end[0] && curr.ty === end[1]) {
             let path = []; let temp = curr;
             while (temp) { path.push([temp.tx, temp.ty]); temp = temp.parent; }
@@ -168,8 +188,12 @@ function findPath(start, end) {
         for (let d of dirs) {
             let ntx = curr.tx + d[0], nty = curr.ty + d[1];
             if (!isWalkable(ntx, nty) || closed.includes(`${ntx},${nty}`)) continue;
-            if (d[0] !== 0 && d[1] !== 0) { if (!isWalkable(curr.tx + d[0], curr.ty) || !isWalkable(curr.tx, curr.ty + d[1])) continue; }
-            let g = curr.g + d[2]; let h = Math.hypot(ntx - end[0], nty - end[1]); let f = g + h;
+            if (d[0] !== 0 && d[1] !== 0) {
+                if (!isWalkable(curr.tx + d[0], curr.ty) || !isWalkable(curr.tx, curr.ty + d[1])) continue;
+            }
+            let g = curr.g + d[2];
+            let h = Math.hypot(ntx - end[0], nty - end[1]);
+            let f = g + h;
             let exist = open.find(n => n.tx === ntx && n.ty === nty);
             if (exist && exist.g <= g) continue;
             open.push({ tx: ntx, ty: nty, g, h, f, parent: curr });
@@ -194,8 +218,10 @@ const D_VEC = [Math.cos(GAME_YAW), -Math.sin(GAME_YAW)];
 
 function project(x, y, z, cam) {
     x -= cam[0]; y -= cam[1]; z -= cam[2];
-    let x2 = x * COS_YAW + z * SIN_YAW; let z2 = -x * SIN_YAW + z * COS_YAW;
-    let y3 = y * COS_PITCH - z2 * SIN_PITCH; let z3 = y * SIN_PITCH + z2 * COS_PITCH;
+    let x2 = x * COS_YAW + z * SIN_YAW;
+    let z2 = -x * SIN_YAW + z * COS_YAW;
+    let y3 = y * COS_PITCH - z2 * SIN_PITCH;
+    let z3 = y * SIN_PITCH + z2 * COS_PITCH;
     if (z3 <= 0.1) return null;
     return [(x2 / z3) * FOV + GAME_W / 2, (-y3 / z3) * FOV + GAME_H / 2, z3];
 }
@@ -204,12 +230,17 @@ function getLightAt(x, y, z) {
     let light = 0;
     let pD = Math.hypot(x - p.x, y - (p.y + 1), z - p.z);
     if (pD < 4) light += (1 - pD / 4) * 0.4;
-    for (let l of game.lights) { let d = Math.hypot(x - l.x, y - l.y, z - l.z); if (d < l.r) light += (1 - d / l.r) * l.intensity; }
+    for (let l of game.lights) {
+        let d = Math.hypot(x - l.x, y - l.y, z - l.z);
+        if (d < l.r) light += (1 - d / l.r) * l.intensity;
+    }
     return Math.min(0.85, light);
 }
 
 function shade(color, factor, x, y, z) {
-    let base = factor * game.ambientLight; let extra = getLightAt(x, y, z) * factor; let total = base + extra;
+    let base = factor * game.ambientLight;
+    let extra = getLightAt(x, y, z) * factor;
+    let total = base + extra;
     return `rgba(${Math.max(0, Math.min(255, color[0]*total))}, ${Math.max(0, Math.min(255, color[1]*total))}, ${Math.max(0, Math.min(255, color[2]*total))}, 1)`;
 }
 
@@ -220,7 +251,8 @@ function addCube(faces, px, py, pz, w, h, d, color, rx=0, ry=0, ox=0, oy=0, oz=0
     const v = [[-w/2,-h/2,-d/2],[w/2,-h/2,-d/2],[w/2,-h/2,d/2],[-w/2,-h/2,d/2],[-w/2,h/2,-d/2],[w/2,h/2,-d/2],[w/2,h/2,d/2],[-w/2,h/2,d/2]];
     let rv = v.map(vert => {
         let cx = vert[0]+ox, cy = vert[1]+oy, cz = vert[2]+oz;
-        let r = rotateX(cx, cy, cz, rx); r = rotateY(r[0], r[1], r[2], ry);
+        let r = rotateX(cx, cy, cz, rx);
+        r = rotateY(r[0], r[1], r[2], ry);
         return [px+r[0], py+r[1], pz+r[2]];
     });
     let cx = px+ox, cy = py+oy, cz = pz+oz;
@@ -238,7 +270,14 @@ function addShadow(faces, px, pz, r, op=80) {
 
 function spawnParticles(x, y, z, color, count) {
     for(let i=0; i<count; i++) {
-        game.particles.push({ x, y, z, vx: (Math.random() - 0.5) * 2, vy: Math.random() * 2, vz: (Math.random() - 0.5) * 2, life: 1.0, color: color });
+        game.particles.push({
+            x, y, z,
+            vx: (Math.random() - 0.5) * 2,
+            vy: Math.random() * 2,
+            vz: (Math.random() - 0.5) * 2,
+            life: 1.0,
+            color: color
+        });
     }
 }
 
@@ -248,7 +287,10 @@ function handleMoveClick(mx, my) {
     for (let ty = 0; ty < game.mapH; ty++) {
         for (let tx = 0; tx < game.mapW; tx++) {
             let proj = project(tx+0.5, 0, ty+0.5, cam);
-            if (proj) { let dist = Math.hypot(mx - proj[0], my - proj[1]); if (dist < minDist) { minDist = dist; closestTx = tx; closestTy = ty; } }
+            if (proj) {
+                let dist = Math.hypot(mx - proj[0], my - proj[1]);
+                if (dist < minDist) { minDist = dist; closestTx = tx; closestTy = ty; }
+            }
         }
     }
     if (closestTx !== -1 && minDist < 90) {
@@ -257,20 +299,28 @@ function handleMoveClick(mx, my) {
             if (isWalkable(closestTx, closestTy)) {
                 removeItem(selectedItem, 1);
                 let h = getHeight(closestTx, closestTy);
-                if (selectedItem === 'Torch') { game.entities.push({ type: 'torch', tx: closestTx, ty: closestTy, swayPhase: 0 }); game.lights.push({ x: closestTx+0.5, y: h+1.0, z: closestTy+0.5, r: 6, intensity: 1.0 }); } 
-                else { game.entities.push({ type: 'campfire', tx: closestTx, ty: closestTy, swayPhase: 0 }); game.lights.push({ x: closestTx+0.5, y: h+0.8, z: closestTy+0.5, r: 10, intensity: 1.5 }); }
+                if (selectedItem === 'Torch') {
+                    game.entities.push({ type: 'torch', tx: closestTx, ty: closestTy, swayPhase: 0 });
+                    game.lights.push({ x: closestTx+0.5, y: h+1.0, z: closestTy+0.5, r: 6, intensity: 1.0 });
+                } else {
+                    game.entities.push({ type: 'campfire', tx: closestTx, ty: closestTy, swayPhase: 0 });
+                    game.lights.push({ x: closestTx+0.5, y: h+0.8, z: closestTy+0.5, r: 10, intensity: 1.5 });
+                }
                 game.obstacles.push(`${closestTx},${closestTy}`);
                 game.feedbackTexts.push({ text: `Placed ${selectedItem}!`, x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
             }
         } else {
             let path = findPath([p.tx, p.ty], [closestTx, closestTy]);
-            if (path.length > 0) { p.path = path.slice(1); game.pendingInteraction = null; game.destinationMarker = { tx: closestTx, ty: closestTy }; }
+            if (path.length > 0) {
+                p.path = path.slice(1); game.pendingInteraction = null; game.destinationMarker = { tx: closestTx, ty: closestTy };
+            }
         }
     }
 }
 
 function handleBreak() {
-    let p = game.player; let closest = null, minD = 2.5;
+    let p = game.player;
+    let closest = null, minD = 2.5;
     game.entities.forEach(e => {
         if (e.type === 'torch' || e.type === 'campfire' || e.type === 'spirit') return;
         let d = Math.hypot(p.x - (e.tx+0.5), p.z - (e.ty+0.5));
@@ -278,58 +328,99 @@ function handleBreak() {
     });
     if (closest) {
         let selectedItem = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
-        if (closest.type === 'ruin_wall' && selectedItem !== 'Pickaxe') { game.feedbackTexts.push({ text: 'Need Pickaxe!', x: GAME_W/2, y: GAME_H/2, timer: 2.0 }); return; }
+        if (closest.type === 'ruin_wall' && selectedItem !== 'Pickaxe') {
+            game.feedbackTexts.push({ text: 'Need Pickaxe!', x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
+            return;
+        }
+        
         let bestAdj = null, minAdjD = 999;
-        for(let dx=-1; dx<=1; dx++) { for(let dy=-1; dy<=1; dy++) { if(dx===0 && dy===0) continue; let atx = closest.tx+dx, aty = closest.ty+dy; if(isWalkable(atx, aty)) { let d = Math.hypot(atx-p.tx, aty-p.ty); if(d < minAdjD) { minAdjD = d; bestAdj = [atx, aty]; } } } }
-        if(bestAdj) { let path = findPath([p.tx, p.ty], bestAdj); if(path.length > 0) { p.path = path.slice(1); game.pendingInteraction = closest; game.destinationMarker = { tx: bestAdj[0], ty: bestAdj[1] }; } }
+        for(let dx=-1; dx<=1; dx++) {
+            for(let dy=-1; dy<=1; dy++) {
+                if(dx===0 && dy===0) continue;
+                let atx = closest.tx+dx, aty = closest.ty+dy;
+                if(isWalkable(atx, aty)) {
+                    let d = Math.hypot(atx-p.tx, aty-p.ty);
+                    if(d < minAdjD) { minAdjD = d; bestAdj = [atx, aty]; }
+                }
+            }
+        }
+        if(bestAdj) {
+            let path = findPath([p.tx, p.ty], bestAdj);
+            if(path.length > 0) {
+                p.path = path.slice(1); game.pendingInteraction = closest; game.destinationMarker = { tx: bestAdj[0], ty: bestAdj[1] };
+            }
+        }
     }
 }
 
 function getButtons() {
-    let scale = Math.min(GAME_W / 1280, GAME_H / 720); scale = Math.max(0.75, Math.min(scale, 1.3));
-    let btnBreakSize = 84 * scale; let btnSmallSize = 68 * scale; let padding = 24 * scale;
-    let baseRight = GAME_W - padding - btnBreakSize/2; let baseBottom = GAME_H - padding - btnBreakSize/2;
-    return { break: { x: baseRight, y: baseBottom, r: btnBreakSize / 2 }, jump: { x: baseRight - (95 * scale), y: baseBottom - (20 * scale), r: btnSmallSize / 2 }, craft: { x: baseRight - (15 * scale), y: baseBottom - (95 * scale), r: btnSmallSize / 2 }, inv: { x: baseRight - (85 * scale), y: baseBottom - (105 * scale), r: btnSmallSize / 2 }, scale: scale };
+    let scale = Math.min(GAME_W / 1280, GAME_H / 720);
+    scale = Math.max(0.75, Math.min(scale, 1.3));
+    let btnBreakSize = 84 * scale;
+    let btnSmallSize = 68 * scale;
+    let padding = 24 * scale;
+    let baseRight = GAME_W - padding - btnBreakSize/2;
+    let baseBottom = GAME_H - padding - btnBreakSize/2;
+    return {
+        break: { x: baseRight, y: baseBottom, r: btnBreakSize / 2 },
+        jump: { x: baseRight - (95 * scale), y: baseBottom - (20 * scale), r: btnSmallSize / 2 },
+        craft: { x: baseRight - (15 * scale), y: baseBottom - (95 * scale), r: btnSmallSize / 2 },
+        inv: { x: baseRight - (85 * scale), y: baseBottom - (105 * scale), r: btnSmallSize / 2 },
+        scale: scale
+    };
 }
 
 canvas.addEventListener('pointerdown', e => {
-    e.preventDefault(); let x = e.clientX, y = e.clientY;
+    e.preventDefault();
+    let x = e.clientX, y = e.clientY;
     if (game.state === 'menu') { game.state = 'playing'; return; }
     if (game.state === 'dialogue') { game.state = 'playing'; return; }
 
     if (game.state === 'crafting' || game.state === 'inventory') {
-        let scale = getButtons().scale; let cs = 50 * scale;
-        let winW = 11 * cs; let winH = 6.5 * cs; let winX = (GAME_W - winW) / 2; let winY = (GAME_H - winH) / 2;
-        
+        // Check recipe clicks in crafting
         if (game.state === 'crafting') {
-            let gridStartY = winY + 1.5 * cs;
-            // Fixed Recipe Hitbox
+            // Recipe selection
+            let recStartY = GAME_H/2 - 150;
             for(let i=0; i<game.recipes.length; i++) {
-                let recY = gridStartY + 30 + i * 35;
-                if (x > winX + 20 && x < winX + 150 && y > recY - 15 && y < recY + 20) {
-                    game.selectedRecipe = i; return;
+                let recY = recStartY + i * 40;
+                if (x > GAME_W/2 - 250 && x < GAME_W/2 - 230 && y > recY && y < recY + 30) {
+                    game.selectedRecipe = i;
+                    return;
                 }
             }
             // Craft button (Output box)
-            let gridStartX = winX + 2 * cs;
-            let arrowX = gridStartX + 3 * cs + 10; let arrowY = gridStartY + cs;
-            let outX = arrowX + cs;
-            if (x > outX && x < outX + cs && y > arrowY && y < arrowY + cs) {
+            let outX = GAME_W/2 + 120, outY = GAME_H/2 - 60;
+            if (x > outX && x < outX + 60 && y > outY && y < outY + 60) {
                 let rec = game.recipes[game.selectedRecipe];
                 let canCraft = Object.keys(rec.cost).every(res => getItemCount(res) >= rec.cost[res]);
-                if (canCraft) { Object.keys(rec.cost).forEach(res => removeItem(res, rec.cost[res])); addItem(rec.result, 1); game.feedbackTexts.push({ text: `Crafted ${rec.name}!`, x: GAME_W/2, y: GAME_H/2, timer: 2.0 }); }
+                if (canCraft) {
+                    Object.keys(rec.cost).forEach(res => removeItem(res, rec.cost[res]));
+                    addItem(rec.result, 1);
+                    game.feedbackTexts.push({ text: `Crafted ${rec.name}!`, x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
+                }
                 return;
             }
         }
-        if (x < winX || x > winX + winW || y < winY || y > winY + winH) { game.state = 'playing'; return; }
+        // Click outside to close
+        if (x < GAME_W/2 - 300 || x > GAME_W/2 + 300 || y < GAME_H/2 - 200 || y > GAME_H/2 + 200) {
+            game.state = 'playing'; return;
+        }
         return;
     }
 
-    let btns = getButtons(); let hbSize = Math.floor(50 * btns.scale); let totalW = 9 * hbSize;
-    let hbStartX = (GAME_W / 2) - (totalW / 2); let hbY = GAME_H - hbSize - (16 * btns.scale);
+    // Hotbar Selection (9 slots)
+    let btns = getButtons();
+    let hbSize = Math.floor(50 * btns.scale);
+    let totalW = 9 * hbSize;
+    let hbStartX = (GAME_W / 2) - (totalW / 2);
+    let hbY = GAME_H - hbSize - (16 * btns.scale);
 
     if (y > hbY && y < hbY + hbSize) {
-        for (let i = 0; i < 9; i++) { if (x > hbStartX + i*hbSize && x < hbStartX + i*hbSize + hbSize) { game.selectedSlot = i; return; } }
+        for (let i = 0; i < 9; i++) {
+            if (x > hbStartX + i*hbSize && x < hbStartX + i*hbSize + hbSize) {
+                game.selectedSlot = i; return;
+            }
+        }
     }
 
     if (x > GAME_W - 260 * btns.scale) {
@@ -342,21 +433,29 @@ canvas.addEventListener('pointerdown', e => {
     let selectedItem = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
     let isPlacing = (selectedItem === 'Torch' || selectedItem === 'Campfire') && getItemCount(selectedItem) > 0;
 
-    if (!isPlacing && x < GAME_W / 2) { game.joy.active = true; game.joy.x = x; game.joy.y = y; game.joy.dx = 0; game.joy.dy = 0; } 
-    else { handleMoveClick(x, y); }
+    if (!isPlacing && x < GAME_W / 2) {
+        game.joy.active = true; game.joy.x = x; game.joy.y = y; game.joy.dx = 0; game.joy.dy = 0;
+    } else {
+        handleMoveClick(x, y);
+    }
 });
 
 canvas.addEventListener('pointermove', e => {
     e.preventDefault();
     if (game.joy.active) {
-        let dx = e.clientX - game.joy.x; let dy = e.clientY - game.joy.y; let dist = Math.hypot(dx, dy);
+        let dx = e.clientX - game.joy.x;
+        let dy = e.clientY - game.joy.y;
+        let dist = Math.hypot(dx, dy);
         let maxDist = 50 * (getButtons().scale);
         if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
         game.joy.dx = dx; game.joy.dy = dy;
     }
 });
 
-canvas.addEventListener('pointerup', e => { e.preventDefault(); game.joy.active = false; game.joy.dx = 0; game.joy.dy = 0; });
+canvas.addEventListener('pointerup', e => {
+    e.preventDefault();
+    game.joy.active = false; game.joy.dx = 0; game.joy.dy = 0;
+});
 
 window.addEventListener('keydown', e => {
     let k = e.key.toLowerCase();
@@ -387,56 +486,103 @@ function update(dt) {
     let spirit = game.entities.find(e => e.type === 'spirit');
     if (spirit && !spirit.talked) {
         let distToSpirit = Math.hypot(p.x - (spirit.tx+0.5), p.z - (spirit.ty+0.5));
-        if (distToSpirit < 2.5) { game.state = 'dialogue'; game.dialogue = { speaker: "Spirit of Nature", text: "Welcome, Wanderer. The Earth has healed, but the remnants of the past remain. Seek the Ruins to the East, and gather the lost materials." }; spirit.talked = true; }
+        if (distToSpirit < 2.5) {
+            game.state = 'dialogue';
+            game.dialogue = { speaker: "Spirit of Nature", text: "Welcome, Wanderer. The Earth has healed, but the remnants of the past remain. Seek the Ruins to the East, and gather the lost materials." };
+            spirit.talked = true;
+        }
     }
 
     let isMovingJoy = game.joy.active && (Math.abs(game.joy.dx) > 4 || Math.abs(game.joy.dy) > 4);
     if (isMovingJoy) {
         p.path = []; game.pendingInteraction = null; game.destinationMarker = null;
-        let joyScale = 50 * getButtons().scale; let inputX = game.joy.dx / joyScale; let inputY = -game.joy.dy / joyScale;
-        let moveX = inputX * D_VEC[0] + inputY * W_VEC[0]; let moveZ = inputX * D_VEC[1] + inputY * W_VEC[1];
+        let joyScale = 50 * getButtons().scale;
+        let inputX = game.joy.dx / joyScale;
+        let inputY = -game.joy.dy / joyScale;
+        let moveX = inputX * D_VEC[0] + inputY * W_VEC[0];
+        let moveZ = inputX * D_VEC[1] + inputY * W_VEC[1];
         let mag = Math.hypot(moveX, moveZ);
         if (mag > 0) {
-            moveX /= mag; moveZ /= mag; let speed = 4.8 * dt; let nx = p.x + moveX * speed, nz = p.z + moveZ * speed;
+            moveX /= mag; moveZ /= mag;
+            let speed = 4.8 * dt;
+            let nx = p.x + moveX * speed, nz = p.z + moveZ * speed;
             let targetTx = Math.floor(nx), targetTy = Math.floor(nz);
-            let currentH = getHeight(p.tx, p.ty); let targetH = getHeight(targetTx, targetTy);
-            if (Math.abs(targetH - currentH) < 0.35 || p.jumpY > 0) { if (isWalkable(targetTx, Math.floor(p.z))) p.x = nx; if (isWalkable(Math.floor(p.x), targetTy)) p.z = nz; }
-            p.tx = Math.floor(p.x); p.ty = Math.floor(p.z); p.targetAngle = Math.atan2(moveX, moveZ); p.state = 'walk';
+            let currentH = getHeight(p.tx, p.ty);
+            let targetH = getHeight(targetTx, targetTy);
+            if (Math.abs(targetH - currentH) < 0.35 || p.jumpY > 0) {
+                if (isWalkable(targetTx, Math.floor(p.z))) p.x = nx;
+                if (isWalkable(Math.floor(p.x), targetTy)) p.z = nz;
+            }
+            p.tx = Math.floor(p.x); p.ty = Math.floor(p.z);
+            p.targetAngle = Math.atan2(moveX, moveZ);
+            p.state = 'walk';
         } else p.state = 'idle';
     } else if (p.path.length > 0) {
-        p.state = 'walk'; let target = p.path[0]; let tx = target[0] + 0.5, tz = target[1] + 0.5;
+        p.state = 'walk';
+        let target = p.path[0];
+        let tx = target[0] + 0.5, tz = target[1] + 0.5;
         let ddx = tx - p.x, ddz = tz - p.z, dist = Math.hypot(ddx, ddz);
         if (dist > 0.01) p.targetAngle = Math.atan2(ddx, ddz);
         let speed = 4.8 * dt;
-        if (dist <= speed) { p.x = tx; p.z = tz; p.tx = target[0]; p.ty = target[1]; p.path.shift(); if (p.path.length === 0 && !game.pendingInteraction) { p.state = 'idle'; game.destinationMarker = null; } } 
-        else { p.x += (ddx/dist)*speed; p.z += (ddz/dist)*speed; }
+        if (dist <= speed) {
+            p.x = tx; p.z = tz; p.tx = target[0]; p.ty = target[1]; p.path.shift();
+            if (p.path.length === 0 && !game.pendingInteraction) { p.state = 'idle'; game.destinationMarker = null; }
+        } else { p.x += (ddx/dist)*speed; p.z += (ddz/dist)*speed; }
     } else if (game.pendingInteraction) {
         let e = game.pendingInteraction;
         if (Math.hypot(p.x - (e.tx+0.5), p.z - (e.ty+0.5)) < 1.5) {
-            p.state = 'gather'; let ddx = (e.tx+0.5) - p.x, ddz = (e.ty+0.5) - p.z; p.targetAngle = Math.atan2(ddx, ddz);
-            let gatherTime = 1.0; let yieldAmount = 1; let selectedItem = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
+            p.state = 'gather';
+            let ddx = (e.tx+0.5) - p.x, ddz = (e.ty+0.5) - p.z;
+            p.targetAngle = Math.atan2(ddx, ddz);
+            
+            let gatherTime = 1.0;
+            let yieldAmount = 1;
+            let selectedItem = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
+            
             if (e.type === 'tree' && selectedItem === 'Axe') gatherTime = 0.5;
             if (e.type === 'rock' && selectedItem === 'Pickaxe') { gatherTime = 0.5; yieldAmount = 2; }
             if (e.type === 'ruin_wall' && selectedItem === 'Pickaxe') { gatherTime = 0.5; yieldAmount = 2; }
+            
             if (!p.gatherTimer) p.gatherTimer = gatherTime;
             p.gatherTimer -= dt;
             if (p.gatherTimer <= 0) {
-                let itemYield = null; let particleColor = [128, 128, 128];
-                if (e.type === 'tree') { if (selectedItem === 'Axe') yieldAmount = 2; itemYield = 'Wood'; particleColor = [92, 64, 51]; }
+                let itemYield = null;
+                let particleColor = [128, 128, 128];
+                if (e.type === 'tree') {
+                    if (selectedItem === 'Axe') yieldAmount = 2;
+                    itemYield = 'Wood'; particleColor = [92, 64, 51];
+                }
                 else if (e.type === 'rock') { itemYield = 'Stone'; particleColor = [128, 128, 128]; }
                 else if (e.type === 'metal') { itemYield = 'Metal'; particleColor = [112, 112, 112]; }
                 else if (e.type === 'bush') { itemYield = 'Fiber'; particleColor = [85, 122, 43]; }
                 else if (e.type === 'ruin_wall') { itemYield = 'Stone'; particleColor = [90, 85, 80]; }
-                if(itemYield) { addItem(itemYield, yieldAmount); game.feedbackTexts.push({text:`+${yieldAmount} ${itemYield}`, x:GAME_W/2, y:GAME_H/2, timer:2.0}); spawnParticles(e.tx+0.5, 0.5, e.ty+0.5, particleColor, 8); }
-                game.entities.splice(game.entities.indexOf(e), 1); game.obstacles.splice(game.obstacles.indexOf(`${e.tx},${e.ty}`), 1);
-                game.pendingInteraction = null; p.state = 'idle'; game.destinationMarker = null; delete p.gatherTimer;
+                
+                if(itemYield) {
+                    addItem(itemYield, yieldAmount); 
+                    game.feedbackTexts.push({text:`+${yieldAmount} ${itemYield}`, x:GAME_W/2, y:GAME_H/2, timer:2.0});
+                    spawnParticles(e.tx+0.5, 0.5, e.ty+0.5, particleColor, 8);
+                }
+                
+                game.entities.splice(game.entities.indexOf(e), 1);
+                game.obstacles.splice(game.obstacles.indexOf(`${e.tx},${e.ty}`), 1);
+                game.pendingInteraction = null; p.state = 'idle'; game.destinationMarker = null;
+                delete p.gatherTimer;
             }
         } else p.state = 'idle';
     } else p.state = 'idle';
 
-    let terrainY = getHeight(p.tx, p.ty); let targetY = terrainY + p.jumpY; p.y += (targetY - p.y) * Math.min(1, dt * 15);
+    let terrainY = getHeight(p.tx, p.ty);
+    let targetY = terrainY + p.jumpY;
+    p.y += (targetY - p.y) * Math.min(1, dt * 15);
 
-    game.particles.forEach(pt => { pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.z += pt.vz * dt; pt.vy -= 5 * dt; pt.life -= dt * 1.5; });
+    // Update Particles
+    game.particles.forEach(pt => {
+        pt.x += pt.vx * dt;
+        pt.y += pt.vy * dt;
+        pt.z += pt.vz * dt;
+        pt.vy -= 5 * dt; // Gravity
+        pt.life -= dt * 1.5;
+    });
     game.particles = game.particles.filter(pt => pt.life > 0);
 
     game.lights.forEach(l => { l.intensity = (l.baseIntensity || 1) + Math.sin(game.frameCount * 0.4 + l.x) * 0.08; });
@@ -445,38 +591,69 @@ function update(dt) {
 }
 
 function render() {
-    ctx.fillStyle = '#121809'; ctx.fillRect(0, 0, GAME_W, GAME_H);
+    ctx.fillStyle = '#121809';
+    ctx.fillRect(0, 0, GAME_W, GAME_H);
+
     let btns = getButtons();
 
     if (game.state === 'menu') {
-        let frameW = Math.min(GAME_W * 0.95, 640); let frameH = frameW * (120 / 160); let frameX = (GAME_W - frameW) / 2; let frameY = (GAME_H - frameH) / 2;
+        let frameW = Math.min(GAME_W * 0.95, 640);
+        let frameH = frameW * (120 / 160);
+        let frameX = (GAME_W - frameW) / 2;
+        let frameY = (GAME_H - frameH) / 2;
         drawUIRect('ui_main_menu_frame', frameX, frameY, frameW, frameH);
-        let titleBoxY = frameY + frameH * (14 / 120); let titleBoxH = frameH * (18 / 120); let titleCenterY = titleBoxY + titleBoxH * 0.5;
-        ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.font = `900 ${Math.floor(frameW * 0.08)}px "Courier New", monospace`; ctx.fillText('THE LAST WANDERER', GAME_W/2, titleCenterY);
-        let btnW = frameW * 0.5; let btnH = btnW * (40 / 120); let btnX = (GAME_W - btnW) / 2; let btnY = frameY + frameH * 0.52;
+        
+        let titleBoxY = frameY + frameH * (14 / 120);
+        let titleBoxH = frameH * (18 / 120);
+        let titleCenterY = titleBoxY + titleBoxH * 0.5;
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `900 ${Math.floor(frameW * 0.08)}px "Courier New", monospace`;
+        ctx.fillText('THE LAST WANDERER', GAME_W/2, titleCenterY);
+        
+        let btnW = frameW * 0.5;
+        let btnH = btnW * (40 / 120);
+        let btnX = (GAME_W - btnW) / 2;
+        let btnY = frameY + frameH * 0.52;
         drawUIRect('menu_button_start', btnX, btnY, btnW, btnH);
-        ctx.fillStyle = '#FFFFFF'; ctx.font = `900 ${Math.floor(btnH * 0.4)}px "Courier New", monospace`; ctx.fillText("TAP TO START", GAME_W/2, btnY + btnH * 0.5);
-        ctx.textBaseline = 'alphabetic'; return;
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = `900 ${Math.floor(btnH * 0.4)}px "Courier New", monospace`;
+        ctx.fillText("TAP TO START", GAME_W/2, btnY + btnH * 0.5);
+        ctx.textBaseline = 'alphabetic';
+        return;
     }
 
-    let p = game.player; let cam = [p.x - 10, 12, p.z - 10]; let faces = [];
+    let p = game.player;
+    let cam = [p.x - 10, 12, p.z - 10];
+    let faces = [];
 
     for (let ty = 0; ty < game.mapH; ty++) {
         for (let tx = 0; tx < game.mapW; tx++) {
-            let tt = game.map[ty*game.mapW+tx]; let c = tt === 0 ? [74, 93, 35] : tt === 1 ? [110, 90, 50] : [45, 80, 110];
+            let tt = game.map[ty*game.mapW+tx];
+            let c = tt === 0 ? [74, 93, 35] : tt === 1 ? [110, 90, 50] : [45, 80, 110];
             let h = getHeight(tx, ty);
             faces.push({ verts: [[tx, h, ty], [tx+1, h, ty], [tx+1, h, ty+1], [tx, h, ty+1]], color: shade(c, 1.0, tx+0.5, h, ty+0.5) });
-            let hL = getHeight(tx-1, ty); if (h < hL) faces.push({ verts: [[tx, h, ty], [tx, hL, ty], [tx, hL, ty+1], [tx, h, ty+1]], color: shade(c, 0.6, tx, (h+hL)/2, ty+0.5) });
-            let hR = getHeight(tx+1, ty); if (h < hR) faces.push({ verts: [[tx+1, h, ty], [tx+1, hR, ty], [tx+1, hR, ty+1], [tx+1, h, ty+1]], color: shade(c, 0.6, tx+1, (h+hR)/2, ty+0.5) });
-            let hF = getHeight(tx, ty-1); if (h < hF) faces.push({ verts: [[tx, h, ty], [tx+1, h, ty], [tx+1, hF, ty], [tx, hF, ty]], color: shade(c, 0.5, tx+0.5, (h+hF)/2, ty) });
-            let hB = getHeight(tx, ty+1); if (h < hB) faces.push({ verts: [[tx, h, ty+1], [tx+1, h, ty+1], [tx+1, hB, ty+1], [tx, hB, ty+1]], color: shade(c, 0.5, tx+0.5, (h+hB)/2, ty+1) });
+            let hL = getHeight(tx-1, ty);
+            if (h < hL) faces.push({ verts: [[tx, h, ty], [tx, hL, ty], [tx, hL, ty+1], [tx, h, ty+1]], color: shade(c, 0.6, tx, (h+hL)/2, ty+0.5) });
+            let hR = getHeight(tx+1, ty);
+            if (h < hR) faces.push({ verts: [[tx+1, h, ty], [tx+1, hR, ty], [tx+1, hR, ty+1], [tx+1, h, ty+1]], color: shade(c, 0.6, tx+1, (h+hR)/2, ty+0.5) });
+            let hF = getHeight(tx, ty-1);
+            if (h < hF) faces.push({ verts: [[tx, h, ty], [tx+1, h, ty], [tx+1, hF, ty], [tx, hF, ty]], color: shade(c, 0.5, tx+0.5, (h+hF)/2, ty) });
+            let hB = getHeight(tx, ty+1);
+            if (h < hB) faces.push({ verts: [[tx, h, ty+1], [tx+1, h, ty+1], [tx+1, hB, ty+1], [tx, hB, ty+1]], color: shade(c, 0.5, tx+0.5, (h+hB)/2, ty+1) });
         }
     }
 
     game.grassTufts.forEach(t => { let s = Math.sin(game.frameCount * 0.04 + t.x) * 0.08; addDiamondGrass(faces, t.x, t.z, s); });
 
-    if (game.destinationMarker) { let tx = game.destinationMarker.tx, ty = game.destinationMarker.ty; let h = getHeight(tx, ty) + 0.02; faces.push({ verts: [[tx+0.1,h,ty+0.1], [tx+0.9,h,ty+0.1], [tx+0.9,h,ty+0.9], [tx+0.1,h,ty+0.9]], color: `rgba(162,209,91,0.6)` }); }
+    if (game.destinationMarker) {
+        let tx = game.destinationMarker.tx, ty = game.destinationMarker.ty;
+        let h = getHeight(tx, ty) + 0.02;
+        faces.push({ verts: [[tx+0.1,h,ty+0.1], [tx+0.9,h,ty+0.1], [tx+0.9,h,ty+0.9], [tx+0.1,h,ty+0.9]], color: `rgba(162,209,91,0.6)` });
+    }
 
     game.entities.forEach(e => {
         let h = getHeight(e.tx, e.ty);
@@ -485,16 +662,29 @@ function render() {
         else if (e.type === 'spirit') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.4);
         else if (e.type !== 'torch' && e.type !== 'campfire') addShadow(faces, e.tx+0.5, e.ty+0.5, 0.4);
         
-        if (e.type === 'tree') { let s = Math.sin(game.frameCount * 0.03 + e.swayPhase) * 0.08; addCube(faces, e.tx+0.5+s, h+1.5, e.ty+0.5, 1.2, 1.2, 1.2, [58, 85, 30]); addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.3, 1.0, 0.3, [92, 64, 51]); }
+        if (e.type === 'tree') { 
+            let s = Math.sin(game.frameCount * 0.03 + e.swayPhase) * 0.08; 
+            addCube(faces, e.tx+0.5+s, h+1.5, e.ty+0.5, 1.2, 1.2, 1.2, [58, 85, 30]); 
+            addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.3, 1.0, 0.3, [92, 64, 51]); 
+        }
         else if (e.type === 'rock') addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [128, 128, 128]);
         else if (e.type === 'metal') addCube(faces, e.tx+0.5, h+0.2, e.ty+0.5, 0.9, 0.4, 0.9, [112, 112, 112]);
         else if (e.type === 'bush') { let s = Math.sin(game.frameCount * 0.04 + e.swayPhase) * 0.04; addCube(faces, e.tx+0.5+s, h+0.3, e.ty+0.5, 0.8, 0.6, 0.8, [85, 122, 43]); }
         else if (e.type === 'ruin_wall') addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.8, 1.0, 0.3, [90, 85, 80]);
         else if (e.type === 'torch') { addCube(faces, e.tx+0.5, h+0.5, e.ty+0.5, 0.1, 1.0, 0.1, [92, 64, 51]); addCube(faces, e.tx+0.5, h+1.0, e.ty+0.5, 0.25, 0.25, 0.25, [255, 200, 0]); }
         else if (e.type === 'campfire') { addCube(faces, e.tx+0.5, h+0.1, e.ty+0.5, 0.7, 0.15, 0.7, [80, 80, 80]); addCube(faces, e.tx+0.5, h+0.3, e.ty+0.5, 0.4, 0.3, 0.4, [255, 140, 0]); }
-        else if (e.type === 'spirit') { let baseY = h; addCube(faces, e.tx+0.35, baseY+0.25, e.ty+0.5, 0.2, 0.5, 0.2, [34, 43, 20]); addCube(faces, e.tx+0.65, baseY+0.25, e.ty+0.5, 0.2, 0.5, 0.2, [34, 43, 20]); addCube(faces, e.tx+0.5, baseY+0.8, e.ty+0.5, 0.5, 0.6, 0.3, [74, 93, 35]); addCube(faces, e.tx+0.5, baseY+1.4, e.ty+0.5, 0.3, 0.3, 0.3, [210, 160, 110]); addCube(faces, e.tx+0.5, baseY+1.5, e.ty+0.5, 0.35, 0.1, 0.35, [34, 43, 20]); addCube(faces, e.tx+0.5, baseY+1.6, e.ty+0.5, 0.1, 0.1, 0.1, [255, 255, 255]); }
+        else if (e.type === 'spirit') {
+            let baseY = h;
+            addCube(faces, e.tx+0.35, baseY+0.25, e.ty+0.5, 0.2, 0.5, 0.2, [34, 43, 20]);
+            addCube(faces, e.tx+0.65, baseY+0.25, e.ty+0.5, 0.2, 0.5, 0.2, [34, 43, 20]);
+            addCube(faces, e.tx+0.5, baseY+0.8, e.ty+0.5, 0.5, 0.6, 0.3, [74, 93, 35]);
+            addCube(faces, e.tx+0.5, baseY+1.4, e.ty+0.5, 0.3, 0.3, 0.3, [210, 160, 110]);
+            addCube(faces, e.tx+0.5, baseY+1.5, e.ty+0.5, 0.35, 0.1, 0.35, [34, 43, 20]);
+            addCube(faces, e.tx+0.5, baseY+1.6, e.ty+0.5, 0.1, 0.1, 0.1, [255, 255, 255]);
+        }
     });
 
+    // Character Model (Removed black hair)
     let playerY = p.y;
     addShadow(faces, p.x, p.z, 0.4, 80 * (1 - Math.min(1, p.jumpY / 0.6)));
     let breathe = 0, ls = 0, asr = 0, asl = 0;
@@ -508,127 +698,347 @@ function render() {
     addCube(faces, p.x, torsoY, p.z, 0.5, 0.6, 0.3, [74,93,35], 0, p.angle);
     let rao = rotateY(0.35,0,0,p.angle); addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.2, 0.5, 0.2, [136,176,75], -asr, p.angle, 0, -0.25, 0);
     let lao = rotateY(-0.35,0,0,p.angle); addCube(faces, p.x+lao[0], shoulderY, p.z+lao[2], 0.2, 0.5, 0.2, [136,176,75], -asl, p.angle, 0, -0.25, 0);
-    addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [230,179,128], 0, p.angle);
+    addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [230,179,128], 0, p.angle); // Pure Skin
 
+    // Equipped Tool
     let equippedTool = game.inv[game.selectedSlot] ? game.inv[game.selectedSlot].item : null;
-    if (equippedTool === 'Axe') { let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2]; addCube(faces, hx, hy, hz, 0.08, 0.4, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.2, 0); addCube(faces, hx, hy, hz, 0.25, 0.1, 0.15, [130, 130, 130], -asr, p.angle, 0.15, 0.1, 0); } 
-    else if (equippedTool === 'Pickaxe') { let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2]; addCube(faces, hx, hy, hz, 0.08, 0.4, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.2, 0); addCube(faces, hx, hy, hz, 0.2, 0.08, 0.1, [130, 130, 130], -asr, p.angle, 0.15, 0.1, 0); addCube(faces, hx, hy, hz, 0.2, 0.08, 0.1, [130, 130, 130], -asr, p.angle, -0.15, 0.1, 0); } 
-    else if (equippedTool === 'Torch') { let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2]; addCube(faces, hx, hy, hz, 0.08, 0.3, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.15, 0); addCube(faces, hx, hy, hz, 0.15, 0.15, 0.15, [255, 200, 0], -asr, p.angle, 0, -0.35, 0); }
+    if (equippedTool === 'Axe') {
+        let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
+        addCube(faces, hx, hy, hz, 0.08, 0.4, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.2, 0);
+        addCube(faces, hx, hy, hz, 0.25, 0.1, 0.15, [130, 130, 130], -asr, p.angle, 0.15, 0.1, 0);
+    } else if (equippedTool === 'Pickaxe') {
+        let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
+        addCube(faces, hx, hy, hz, 0.08, 0.4, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.2, 0);
+        addCube(faces, hx, hy, hz, 0.2, 0.08, 0.1, [130, 130, 130], -asr, p.angle, 0.15, 0.1, 0);
+        addCube(faces, hx, hy, hz, 0.2, 0.08, 0.1, [130, 130, 130], -asr, p.angle, -0.15, 0.1, 0);
+    } else if (equippedTool === 'Torch') {
+        let hx = p.x+rao[0], hy = shoulderY, hz = p.z+rao[2];
+        addCube(faces, hx, hy, hz, 0.08, 0.3, 0.08, [100, 70, 40], -asr, p.angle, 0, -0.15, 0);
+        addCube(faces, hx, hy, hz, 0.15, 0.15, 0.15, [255, 200, 0], -asr, p.angle, 0, -0.35, 0);
+    }
 
-    game.particles.forEach(pt => { addCube(faces, pt.x, pt.y, pt.z, 0.15, 0.15, 0.15, pt.color); });
+    // Render 3D Particles
+    game.particles.forEach(pt => {
+        addCube(faces, pt.x, pt.y, pt.z, 0.15, 0.15, 0.15, pt.color);
+    });
 
     let renderables = [];
-    faces.forEach(f => { let pv = []; let valid = true; for (let v of f.verts) { let proj = project(v[0], v[1], v[2], cam); if (!proj) { valid = false; break; } pv.push(proj); } if (valid) { let avgZ = pv.reduce((s,p)=>s+p[2],0) / pv.length; renderables.push({ verts: pv, color: f.color, z: avgZ }); } });
+    faces.forEach(f => {
+        let pv = []; let valid = true;
+        for (let v of f.verts) { let proj = project(v[0], v[1], v[2], cam); if (!proj) { valid = false; break; } pv.push(proj); }
+        if (valid) { let avgZ = pv.reduce((s,p)=>s+p[2],0) / pv.length; renderables.push({ verts: pv, color: f.color, z: avgZ }); }
+    });
     renderables.sort((a,b) => b.z - a.z);
-    renderables.forEach(r => { ctx.beginPath(); ctx.moveTo(r.verts[0][0], r.verts[0][1]); for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]); ctx.closePath(); ctx.fillStyle = r.color; ctx.fill(); });
+    renderables.forEach(r => { 
+        ctx.beginPath(); ctx.moveTo(r.verts[0][0], r.verts[0][1]); 
+        for (let i = 1; i < r.verts.length; i++) ctx.lineTo(r.verts[i][0], r.verts[i][1]); 
+        ctx.closePath(); ctx.fillStyle = r.color; ctx.fill(); 
+    });
 
-    game.feedbackTexts.forEach(ft => { ctx.globalAlpha = Math.max(0, ft.timer / 2.0); let bw = 130 * btns.scale, bh = 30 * btns.scale; drawUIRect('feedback_banner', ft.x - bw/2, ft.y - bh/2, bw, bh); ctx.fillStyle = '#A2D15B'; ctx.font = `bold ${Math.floor(13 * btns.scale)}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(ft.text, ft.x, ft.y); });
-    ctx.globalAlpha = 1.0; ctx.textBaseline = 'alphabetic';
+    // 2D Particles Alpha
+    game.particles.forEach(pt => {
+        // Handled by 3D rendering, just fading
+    });
 
-    let hbSize = Math.floor(50 * btns.scale); let totalW = 9 * hbSize; let hbStartX = (GAME_W / 2) - (totalW / 2); let hbY = GAME_H - hbSize - (16 * btns.scale);
+    game.feedbackTexts.forEach(ft => {
+        ctx.globalAlpha = Math.max(0, ft.timer / 2.0);
+        let bw = 130 * btns.scale, bh = 30 * btns.scale;
+        drawUIRect('feedback_banner', ft.x - bw/2, ft.y - bh/2, bw, bh);
+        ctx.fillStyle = '#A2D15B';
+        ctx.font = `bold ${Math.floor(13 * btns.scale)}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ft.text, ft.x, ft.y);
+    });
+    ctx.globalAlpha = 1.0;
+    ctx.textBaseline = 'alphabetic';
+
+    // --- Hotbar (9 Slots) ---
+    let hbSize = Math.floor(50 * btns.scale);
+    let totalW = 9 * hbSize;
+    let hbStartX = (GAME_W / 2) - (totalW / 2);
+    let hbY = GAME_H - hbSize - (16 * btns.scale);
     for (let i = 0; i < 9; i++) {
-        let hx = hbStartX + i * hbSize; let slotCx = hx + hbSize/2; let slotCy = hbY + hbSize/2;
+        let hx = hbStartX + i * hbSize;
+        let slotCx = hx + hbSize/2;
+        let slotCy = hbY + hbSize/2;
+        
         drawUIImage('hotbar_slot', slotCx, slotCy, hbSize);
-        if (game.selectedSlot === i) { drawUIImage('hotbar_selector', slotCx, slotCy, hbSize); }
-        if (game.inv[i]) { drawUIImage('item_' + game.inv[i].item.toLowerCase(), slotCx, slotCy, hbSize * 0.7); ctx.fillStyle = '#A2D15B'; ctx.font = `bold ${Math.floor(10 * btns.scale)}px Arial`; ctx.textAlign = 'right'; ctx.fillText(game.inv[i].count, hx + hbSize - 4, hbY + 14); }
+        
+        if (game.selectedSlot === i) {
+            drawUIImage('hotbar_selector', slotCx, slotCy, hbSize);
+        }
+        
+        if (game.inv[i]) {
+            drawUIImage('item_' + game.inv[i].item.toLowerCase(), slotCx, slotCy, hbSize * 0.7);
+            ctx.fillStyle = '#A2D15B';
+            ctx.font = `bold ${Math.floor(10 * btns.scale)}px Arial`; 
+            ctx.textAlign = 'right';
+            ctx.fillText(game.inv[i].count, hx + hbSize - 4, hbY + 14);
+        }
     }
 
     if (game.state === 'playing') {
-        let jx = game.joy.active ? game.joy.x : 100 * btns.scale; let jy = game.joy.active ? game.joy.y : GAME_H - (110 * btns.scale);
-        ctx.globalAlpha = game.joy.active ? 0.95 : 0.45; drawUIImage('joystick_base', jx, jy, 110 * btns.scale);
-        if (game.joy.active) { drawUIImage('joystick_knob', jx + game.joy.dx, jy + game.joy.dy, 48 * btns.scale); }
+        let jx = game.joy.active ? game.joy.x : 100 * btns.scale;
+        let jy = game.joy.active ? game.joy.y : GAME_H - (110 * btns.scale);
+        ctx.globalAlpha = game.joy.active ? 0.95 : 0.45;
+        drawUIImage('joystick_base', jx, jy, 110 * btns.scale);
+        if (game.joy.active) {
+            drawUIImage('joystick_knob', jx + game.joy.dx, jy + game.joy.dy, 48 * btns.scale);
+        }
         ctx.globalAlpha = 1.0;
-        drawUIImage('btn_break', btns.break.x, btns.break.y, btns.break.r * 2); drawUIImage('btn_jump', btns.jump.x, btns.jump.y, btns.jump.r * 2);
-        drawUIImage('btn_craft', btns.craft.x, btns.craft.y, btns.craft.r * 2); drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, btns.inv.r * 2);
+
+        drawUIImage('btn_break', btns.break.x, btns.break.y, btns.break.r * 2);
+        drawUIImage('btn_jump', btns.jump.x, btns.jump.y, btns.jump.r * 2);
+        drawUIImage('btn_craft', btns.craft.x, btns.craft.y, btns.craft.r * 2);
+        drawUIImage('btn_inventory', btns.inv.x, btns.inv.y, btns.inv.r * 2);
     }
 
+    // --- Minecraft Style Inventory & Crafting ---
     if (game.state === 'crafting' || game.state === 'inventory') {
-        ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0,0,GAME_W,GAME_H);
-        let scale = btns.scale; let cs = 50 * scale;
-        let winW = 11 * cs; let winH = 6.5 * cs; let winX = (GAME_W - winW) / 2; let winY = (GAME_H - winH) / 2;
+        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+        ctx.fillRect(0,0,GAME_W,GAME_H);
+        
+        let scale = btns.scale;
+        let cs = 50 * scale; // Cell Size
+        
+        // Window Dimensions (fits 9x4 grid + crafting area)
+        let winW = 11 * cs;
+        let winH = 6.5 * cs;
+        let winX = (GAME_W - winW) / 2;
+        let winY = (GAME_H - winH) / 2;
+        
         drawUIRect('ui_window', winX, winY, winW, winH);
-        ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.font = `900 ${Math.floor(20 * scale)}px "Courier New", monospace`; ctx.fillText(game.state.toUpperCase(), winX + 20, winY + 15);
+        
+        ctx.fillStyle = '#FFFFFF'; 
+        ctx.textAlign = 'left'; 
+        ctx.textBaseline = 'top';
+        ctx.font = `900 ${Math.floor(20 * scale)}px "Courier New", monospace`;
+        ctx.fillText(game.state.toUpperCase(), winX + 20, winY + 15);
 
-        let invStartX = winX + (winW - 9 * cs) / 2; let invStartY = winY + winH - 4.5 * cs; let hbStartY = winY + winH - 1.5 * cs;
+        // --- Inventory Grid (9x3) + Hotbar (9x1) ---
+        let invStartX = winX + (winW - 9 * cs) / 2;
+        let invStartY = winY + winH - 4.5 * cs;
+        let hbStartY = winY + winH - 1.5 * cs;
+        
         for(let i=0; i<36; i++) {
-            let col = i % 9; let row = Math.floor(i / 9); let ix = invStartX + col * cs; let iy = (row < 3) ? invStartY + row * cs : hbStartY;
+            let col = i % 9;
+            let row = Math.floor(i / 9);
+            let ix = invStartX + col * cs;
+            let iy = (row < 3) ? invStartY + row * cs : hbStartY;
+            
             drawUIImage('inventory_slot', ix + cs/2, iy + cs/2, cs * 0.95);
-            if (game.inv[i]) { drawUIImage('item_' + game.inv[i].item.toLowerCase(), ix + cs/2, iy + cs/2, cs * 0.7); ctx.fillStyle = '#A2D15B'; ctx.font = `bold ${Math.floor(12 * scale)}px Arial`; ctx.textAlign = 'right'; ctx.fillText(game.inv[i].count, ix + cs - 5, iy + 14); }
+            
+            if (game.inv[i]) {
+                drawUIImage('item_' + game.inv[i].item.toLowerCase(), ix + cs/2, iy + cs/2, cs * 0.7);
+                ctx.fillStyle = '#A2D15B';
+                ctx.font = `bold ${Math.floor(12 * scale)}px Arial`; 
+                ctx.textAlign = 'right';
+                ctx.fillText(game.inv[i].count, ix + cs - 5, iy + 14);
+            }
         }
 
+        // --- Crafting Area ---
         if (game.state === 'crafting') {
-            let gridStartX = winX + 2 * cs; let gridStartY = winY + 1.5 * cs;
-            ctx.fillStyle = '#FFFFFF'; ctx.font = `bold ${Math.floor(14 * scale)}px Arial`; ctx.textAlign = 'left'; ctx.fillText("Recipes:", winX + 20, gridStartY);
-            for(let i=0; i<game.recipes.length; i++) { let recY = gridStartY + 30 + i * 35; ctx.fillStyle = game.selectedRecipe === i ? '#88B04B' : '#FFFFFF'; ctx.fillText((i+1) + ". " + game.recipes[i].name, winX + 30, recY); }
-            for(let i=0; i<9; i++) {
-                let col = i % 3; let row = Math.floor(i / 3); let ix = gridStartX + col * cs; let iy = gridStartY + row * cs;
-                drawUIImage('inventory_slot', ix + cs/2, iy + cs/2, cs * 0.95);
-                let rec = game.recipes[game.selectedRecipe];
-                if(rec.grid[i]) { drawUIImage('item_' + rec.grid[i].toLowerCase(), ix + cs/2, iy + cs/2, cs * 0.7); }
+            let gridStartX = winX + 2 * cs;
+            let gridStartY = winY + 1.5 * cs;
+            
+            // Recipe List (Left)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = `bold ${Math.floor(14 * scale)}px Arial`;
+            ctx.textAlign = 'left';
+            ctx.fillText("Recipes:", winX + 20, gridStartY);
+            
+            for(let i=0; i<game.recipes.length; i++) {
+                let recY = gridStartY + 30 + i * 35;
+                ctx.fillStyle = game.selectedRecipe === i ? '#88B04B' : '#FFFFFF';
+                ctx.fillText((i+1) + ". " + game.recipes[i].name, winX + 30, recY);
             }
-            let arrowX = gridStartX + 3 * cs + 10; let arrowY = gridStartY + cs;
-            ctx.fillStyle = '#FFFFFF'; ctx.font = `bold ${Math.floor(20 * scale)}px Arial`; ctx.textAlign = 'center'; ctx.fillText("->", arrowX + cs/2, arrowY + cs/2);
+            
+            // 3x3 Crafting Grid (Center)
+            for(let i=0; i<9; i++) {
+                let col = i % 3;
+                let row = Math.floor(i / 3);
+                let ix = gridStartX + col * cs;
+                let iy = gridStartY + row * cs;
+                drawUIImage('inventory_slot', ix + cs/2, iy + cs/2, cs * 0.95);
+                
+                let rec = game.recipes[game.selectedRecipe];
+                if(rec.grid[i]) {
+                    drawUIImage('item_' + rec.grid[i].toLowerCase(), ix + cs/2, iy + cs/2, cs * 0.7);
+                }
+            }
+            
+            // Arrow & Output (Right)
+            let arrowX = gridStartX + 3 * cs + 10;
+            let arrowY = gridStartY + cs;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = `bold ${Math.floor(20 * scale)}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText("->", arrowX + cs/2, arrowY + cs/2);
+            
             let outX = arrowX + cs;
             drawUIImage('inventory_slot', outX + cs/2, arrowY + cs/2, cs * 0.95);
             let rec = game.recipes[game.selectedRecipe];
             drawUIImage('item_' + rec.result.toLowerCase(), outX + cs/2, arrowY + cs/2, cs * 0.7);
-            ctx.strokeStyle = '#88B04B'; ctx.lineWidth = 2; ctx.strokeRect(outX, arrowY, cs, cs);
+            
+            // Output Box Outline (Indicate click to craft)
+            ctx.strokeStyle = '#88B04B';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(outX, arrowY, cs, cs);
         }
         ctx.textBaseline = 'alphabetic';
     }
 
+    // --- RPG Dialogue Box with Portrait ---
     if (game.state === 'dialogue' && game.dialogue) {
-        ctx.fillStyle = 'rgba(0,0,0,0.8)'; ctx.fillRect(0,0,GAME_W,GAME_H);
-        let scale = btns.scale; let boxW = Math.min(GAME_W * 0.9, 600); let boxH = 180; let boxX = (GAME_W - boxW) / 2; let boxY = GAME_H - boxH - 50;
+        ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        ctx.fillRect(0,0,GAME_W,GAME_H);
+        
+        let scale = btns.scale;
+        let boxW = Math.min(GAME_W * 0.9, 600);
+        let boxH = 180;
+        let boxX = (GAME_W - boxW) / 2;
+        let boxY = GAME_H - boxH - 50;
+        
         drawUIRect('ui_window', boxX, boxY, boxW, boxH);
-        ctx.fillStyle = '#121809'; ctx.fillRect(boxX + 10, boxY + 10, 100, 100);
+        
+        // Portrait Background
+        ctx.fillStyle = '#121809';
+        ctx.fillRect(boxX + 10, boxY + 10, 100, 100);
+        
+        // Draw Pixel Art Portrait (Spirit of Nature)
         let px = boxX + 20, py = boxY + 20, pSize = 10;
+        // Face
         ctx.fillStyle = '#D2B48C'; ctx.fillRect(px+3*pSize, py+1*pSize, 2*pSize, 2*pSize);
-        ctx.fillStyle = '#4A5D23'; ctx.fillRect(px+2*pSize, py+0.5*pSize, 4*pSize, 1.5*pSize); ctx.fillRect(px+2*pSize, py+1.5*pSize, 0.5*pSize, 2*pSize); ctx.fillRect(px+5.5*pSize, py+1.5*pSize, 0.5*pSize, 2*pSize);
-        ctx.fillStyle = '#88B04B'; ctx.fillRect(px+3.5*pSize, py+1.5*pSize, 0.5*pSize, 0.5*pSize); ctx.fillRect(px+4.5*pSize, py+1.5*pSize, 0.5*pSize, 0.5*pSize);
+        // Hair (Vines)
+        ctx.fillStyle = '#4A5D23'; ctx.fillRect(px+2*pSize, py+0.5*pSize, 4*pSize, 1.5*pSize);
+        ctx.fillRect(px+2*pSize, py+1.5*pSize, 0.5*pSize, 2*pSize);
+        ctx.fillRect(px+5.5*pSize, py+1.5*pSize, 0.5*pSize, 2*pSize);
+        // Eyes
+        ctx.fillStyle = '#88B04B'; ctx.fillRect(px+3.5*pSize, py+1.5*pSize, 0.5*pSize, 0.5*pSize);
+        ctx.fillRect(px+4.5*pSize, py+1.5*pSize, 0.5*pSize, 0.5*pSize);
+        // Mouth
         ctx.fillStyle = '#8B4513'; ctx.fillRect(px+3.5*pSize, py+2.5*pSize, 1*pSize, 0.2*pSize);
+        // Body (Leafy Dress)
         ctx.fillStyle = '#74,93,35'; ctx.fillRect(px+2*pSize, py+3*pSize, 4*pSize, 4*pSize);
         ctx.fillStyle = '#88B04B'; ctx.fillRect(px+2.5*pSize, py+3.5*pSize, 3*pSize, 1*pSize);
-        ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.font = `bold ${Math.floor(18 * scale)}px Arial`; ctx.fillText(game.dialogue.speaker + ":", boxX + 130, boxY + 30);
-        ctx.fillStyle = '#A2D15B'; ctx.font = `${Math.floor(16 * scale)}px Arial`;
-        let words = game.dialogue.text.split(' '); let line = ''; let y = boxY + 60;
-        for(let i=0; i<words.length; i++) { let testLine = line + words[i] + ' '; if (ctx.measureText(testLine).width > boxW - 150 && i > 0) { ctx.fillText(line, boxX + 130, y); line = words[i] + ' '; y += 25; } else { line = testLine; } }
+        
+        // Text
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.font = `bold ${Math.floor(18 * scale)}px Arial`;
+        ctx.fillText(game.dialogue.speaker + ":", boxX + 130, boxY + 30);
+        
+        ctx.fillStyle = '#A2D15B';
+        ctx.font = `${Math.floor(16 * scale)}px Arial`;
+        let words = game.dialogue.text.split(' ');
+        let line = '';
+        let y = boxY + 60;
+        for(let i=0; i<words.length; i++) {
+            let testLine = line + words[i] + ' ';
+            if (ctx.measureText(testLine).width > boxW - 150 && i > 0) {
+                ctx.fillText(line, boxX + 130, y);
+                line = words[i] + ' ';
+                y += 25;
+            } else {
+                line = testLine;
+            }
+        }
         ctx.fillText(line, boxX + 130, y);
-        ctx.textAlign = 'center'; ctx.fillStyle = '#FFFFFF'; ctx.font = `bold ${Math.floor(12 * scale)}px Arial`; ctx.fillText("[ Tap to Continue ]", GAME_W/2, boxY + boxH - 25); ctx.textBaseline = 'alphabetic';
+        
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = `bold ${Math.floor(12 * scale)}px Arial`;
+        ctx.fillText("[ Tap to Continue ]", GAME_W/2, boxY + boxH - 25);
+        ctx.textBaseline = 'alphabetic';
     }
 }
 
-const tips = ["Tip: Craft a Pickaxe to mine stone faster!", "Tip: Place Campfires to light up the night.", "Tip: The Spirit of Nature guides you.", "Tip: Trees yield more wood with an Axe.", "Tip: Explore the ruins to find metal scrap."];
+// --- Smooth Isometric Loading Screen ---
+const tips = [
+    "Tip: Craft a Pickaxe to mine stone faster!",
+    "Tip: Place Campfires to light up the night.",
+    "Tip: The Spirit of Nature guides you.",
+    "Tip: Trees yield more wood with an Axe.",
+    "Tip: Explore the ruins to find metal scrap."
+];
 let currentTip = tips[Math.floor(Math.random() * tips.length)];
 let particles = [];
-for(let i=0; i<50; i++) { particles.push({ x: Math.random() * GAME_W, y: Math.random() * GAME_H, vy: -0.5 - Math.random() * 1, size: 1 + Math.random() * 2, alpha: Math.random() * 0.5, color: `hsla(${Math.random() * 60 + 80}, 50%, 60%, ${Math.random() * 0.5})` }); }
+for(let i=0; i<50; i++) {
+    particles.push({
+        x: Math.random() * GAME_W,
+        y: Math.random() * GAME_H,
+        vy: -0.5 - Math.random() * 1,
+        size: 1 + Math.random() * 2,
+        alpha: Math.random() * 0.5,
+        color: `hsla(${Math.random() * 60 + 80}, 50%, 60%, ${Math.random() * 0.5})` // Greenish-Yellow Hues
+    });
+}
 
 function renderLoadingScreen(frameCount) {
-    ctx.fillStyle = '#121809'; ctx.fillRect(0, 0, GAME_W, GAME_H);
-    particles.forEach(p => { p.y += p.vy; if (p.y < 0) { p.y = GAME_H; p.x = Math.random() * GAME_W; } ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); });
-    let cx = GAME_W / 2; let cy = GAME_H / 2 - 40; let w = 80, h = 40; let activeTile = Math.floor(frameCount / 30) % 4;
-    const tiles = [ { gx: 0, gy: 0, color: '#4A5D23', name: 'Meadow' }, { gx: 1, gy: 0, color: '#3A5A1E', name: 'Forest' }, { gx: 1, gy: 1, color: '#5A5550', name: 'Ruins' }, { gx: 0, gy: 1, color: '#2D506E', name: 'Lake' } ];
-    tiles.forEach((tile, i) => {
-        let isoX = cx + (tile.gx - tile.gy) * (w / 2); let isoY = cy + (tile.gx + tile.gy) * (h / 2);
-        ctx.beginPath(); ctx.moveTo(isoX, isoY); ctx.lineTo(isoX + w/2, isoY + h/2); ctx.lineTo(isoX, isoY + h); ctx.lineTo(isoX - w/2, isoY + h/2); ctx.closePath();
-        ctx.fillStyle = tile.color; ctx.fill();
-        if (i === activeTile) { ctx.strokeStyle = '#A2D15B'; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 14px Arial'; ctx.textAlign = 'center'; ctx.fillText(tile.name, isoX, isoY - 10); }
+    ctx.fillStyle = '#121809';
+    ctx.fillRect(0, 0, GAME_W, GAME_H);
+
+    // Smooth Glowing Particles
+    particles.forEach(p => {
+        p.y += p.vy;
+        if (p.y < 0) { p.y = GAME_H; p.x = Math.random() * GAME_W; }
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
     });
-    ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 24px "Courier New", monospace'; ctx.textAlign = 'center'; ctx.fillText('LOADING...', GAME_W / 2, cy + h * 2 + 30);
-    ctx.fillStyle = '#88B04B'; ctx.font = '16px Arial'; ctx.fillText(currentTip, GAME_W / 2, GAME_H - 50);
-}
 
-let isLoading = true;
-let loadingFrame = 0;
-function loadingLoop() {
-    if (!isLoading) return; // FIXED: Stop the loading loop once the game starts
-    loadingFrame++;
-    renderLoadingScreen(loadingFrame);
-    requestAnimationFrame(loadingLoop);
-}
-loadingLoop();
+    // Isometric 4 Squares
+    let cx = GAME_W / 2;
+    let cy = GAME_H / 2 - 40;
+    let w = 80, h = 40;
+    let activeTile = Math.floor(frameCount / 30) % 4;
+    
+    const tiles = [
+        { gx: 0, gy: 0, color: '#4A5D23', name: 'Meadow' },
+        { gx: 1, gy: 0, color: '#3A5A1E', name: 'Forest' },
+        { gx: 1, gy: 1, color: '#5A5550', name: 'Ruins' },
+        { gx: 0, gy: 1, color: '#2D506E', name: 'Lake' }
+    ];
 
-const minLoadTime = new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds
+    tiles.forEach((tile, i) => {
+        let isoX = cx + (tile.gx - tile.gy) * (w / 2);
+        let isoY = cy + (tile.gx + tile.gy) * (h / 2);
+        
+        ctx.beginPath();
+        ctx.moveTo(isoX, isoY);
+        ctx.lineTo(isoX + w/2, isoY + h/2);
+        ctx.lineTo(isoX, isoY + h);
+        ctx.lineTo(isoX - w/2, isoY + h/2);
+        ctx.closePath();
+        
+        ctx.fillStyle = tile.color;
+        ctx.fill();
+        
+        if (i === activeTile) {
+            ctx.strokeStyle = '#A2D15B';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(tile.name, isoX, isoY - 10);
+        }
+    });
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 24px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('LOADING...', GAME_W / 2, cy + h * 2 + 30);
+
+    ctx.fillStyle = '#88B04B';
+    ctx.font = '16px Arial';
+    ctx.fillText(currentTip, GAME_W / 2, GAME_H - 50);
+}
 
 function loop(now) {
     let dt = (now - lastTime) / 1000;
@@ -638,8 +1048,19 @@ function loop(now) {
     requestAnimationFrame(loop);
 }
 
+// --- Initialization with 5s Minimum Wait ---
+let loadingFrame = 0;
+function loadingLoop() {
+    loadingFrame++;
+    renderLoadingScreen(loadingFrame);
+    requestAnimationFrame(loadingLoop);
+}
+loadingLoop();
+
+const minLoadTime = new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds
+
 Promise.all([loadAssets(), minLoadTime]).then(() => {
-    isLoading = false; // Stop loading screen
+    // Stop loading loop, start game loop
     lastTime = performance.now();
-    requestAnimationFrame(loop); // Start game loop
+    requestAnimationFrame(loop);
 });
