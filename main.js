@@ -16,42 +16,19 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// --- Pixel-Art SVG Assets ---
-const rawSVGs = {
-  joystick_base: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="30" y="16" width="4" height="32" fill="#222B14" /><rect x="16" y="30" width="32" height="4" fill="#222B14" /><rect x="30" y="18" width="4" height="28" fill="#88B04B" opacity="0.6" /><rect x="18" y="30" width="28" height="4" fill="#88B04B" opacity="0.6" /></svg>`,
-  joystick_knob: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 24,12 H 40 V 16 H 48 V 24 H 52 V 40 H 48 V 48 H 40 V 52 H 24 V 48 H 16 V 40 H 12 V 24 H 16 V 16 H 24 Z" fill="#FFFFFF" /><path d="M 24,16 H 40 V 20 H 44 V 24 H 48 V 40 H 44 V 44 H 40 V 48 H 24 V 44 H 20 V 40 H 16 V 24 H 20 V 20 H 24 Z" fill="#222B14" /><rect x="20" y="20" width="24" height="24" fill="#88B04B" /><rect x="24" y="24" width="16" height="16" fill="#A2D15B" /><rect x="26" y="26" width="6" height="6" fill="#FFFFFF" /></svg>`,
-  btn_break: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="28" height="28" fill="#A0A0A0" /><rect x="20" y="20" width="24" height="24" fill="#C0C0C0" /><rect x="30" y="20" width="4" height="6" fill="#222B14" /><rect x="26" y="26" width="6" height="4" fill="#222B14" /><rect x="30" y="30" width="4" height="8" fill="#222B14" /><rect x="34" y="34" width="8" height="4" fill="#222B14" /><rect x="22" y="32" width="6" height="4" fill="#222B14" /><rect x="16" y="24" width="3" height="3" fill="#88B04B" /><rect x="44" y="22" width="3" height="3" fill="#88B04B" /><rect x="42" y="40" width="3" height="3" fill="#88B04B" /></svg>`,
-  btn_jump: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><path d="M 32,16 L 46,30 H 38 V 46 H 26 V 30 H 18 Z" fill="#FFFFFF" /><path d="M 32,20 L 42,30 H 36 V 42 H 28 V 30 H 22 Z" fill="#88B04B" /></svg>`,
-  btn_craft: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="12" height="12" fill="#FFFFFF" /><rect x="20" y="20" width="8" height="8" fill="#121809" /><rect x="34" y="18" width="12" height="12" fill="#FFFFFF" /><rect x="36" y="20" width="8" height="8" fill="#121809" /><rect x="18" y="34" width="12" height="12" fill="#FFFFFF" /><rect x="20" y="36" width="8" height="8" fill="#121809" /><rect x="34" y="34" width="12" height="12" fill="#FFFFFF" /><rect x="36" y="36" width="8" height="8" fill="#88B04B" /></svg>`,
-  btn_inventory: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 20,4 H 44 V 8 H 52 V 12 H 56 V 20 H 60 V 44 H 56 V 52 H 52 V 56 H 44 V 60 H 20 V 56 H 12 V 52 H 8 V 44 H 4 V 20 H 8 V 12 H 12 V 8 H 20 Z" fill="#FFFFFF" /><path d="M 20,8 H 44 V 12 H 52 V 20 H 56 V 44 H 52 V 52 H 44 V 56 H 20 V 52 H 12 V 44 H 8 V 20 H 12 V 12 H 20 Z" fill="#222B14" /><rect x="12" y="12" width="40" height="40" fill="#4A5D23" /><rect x="18" y="18" width="28" height="10" fill="#FFFFFF" /><rect x="20" y="20" width="24" height="6" fill="#88B04B" /><rect x="22" y="20" width="4" height="22" fill="#222B14" /><rect x="38" y="20" width="4" height="22" fill="#222B14" /><rect x="22" y="28" width="4" height="4" fill="#FFD700" /><rect x="38" y="28" width="4" height="4" fill="#FFD700" /><rect x="18" y="28" width="28" height="18" fill="#FFFFFF" /><rect x="20" y="30" width="24" height="14" fill="#A2D15B" /></svg>`,
-  
-  ui_window: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" width="100%" height="100%" shape-rendering="crispEdges" preserveAspectRatio="none"><path d="M 8,0 H 112 V 4 H 116 V 8 H 120 V 72 H 116 V 76 H 112 V 80 H 8 V 76 H 4 V 72 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 112 V 8 H 116 V 72 H 112 V 76 H 8 V 72 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="6" y="6" width="108" height="68" fill="#4A5D23" /><rect x="30" y="10" width="60" height="14" fill="#FFFFFF" /><rect x="32" y="12" width="56" height="10" fill="#121809" /><rect x="14" y="28" width="92" height="40" fill="#121809" /><path d="M 14,28 H 106 V 31 H 17 V 68 H 14 Z" fill="#0A0D06" /></svg>`,
-  ui_main_menu_frame: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="100%" height="100%" shape-rendering="crispEdges"><path d="M 8,0 H 152 V 4 H 156 V 8 H 160 V 112 H 156 V 116 H 152 V 120 H 8 V 116 H 4 V 112 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 152 V 8 H 156 V 112 H 152 V 116 H 8 V 112 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="6" y="6" width="148" height="108" fill="#4A5D23" /><rect x="10" y="10" width="8" height="8" fill="#88B04B" /><rect x="142" y="10" width="8" height="8" fill="#88B04B" /><rect x="10" y="102" width="8" height="8" fill="#88B04B" /><rect x="142" y="102" width="8" height="8" fill="#88B04B" /><rect x="35" y="14" width="90" height="18" fill="#FFFFFF" /><rect x="37" y="16" width="86" height="14" fill="#121809" /><rect x="18" y="38" width="124" height="68" fill="#121809" /><path d="M 18,38 H 142 V 41 H 21 V 106 H 18 Z" fill="#0A0D06" /></svg>`,
-  recipe_row: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 32" width="100%" height="100%" shape-rendering="crispEdges"><path d="M 4,0 H 156 V 2 H 158 V 4 H 160 V 28 H 158 V 30 H 156 V 32 H 4 V 30 H 2 V 28 H 0 V 4 H 2 V 2 H 4 Z" fill="#FFFFFF" /><path d="M 4,2 H 156 V 4 H 158 V 28 H 156 V 30 H 4 V 28 H 2 V 4 H 4 Z" fill="#222B14" /><rect x="4" y="4" width="152" height="24" fill="#4A5D23" /><rect x="8" y="6" width="20" height="20" fill="#FFFFFF" /><rect x="10" y="8" width="16" height="16" fill="#121809" /><rect x="32" y="6" width="120" height="20" fill="#121809" /></svg>`,
-  inventory_slot: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 8,0 H 56 V 4 H 60 V 8 H 64 V 56 H 60 V 60 H 56 V 64 H 8 V 60 H 4 V 56 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 56 V 8 H 60 V 56 H 56 V 60 H 8 V 56 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="8" y="8" width="48" height="48" fill="#4A5D23" /><rect x="12" y="12" width="40" height="40" fill="#121809" /><path d="M 12,12 H 52 V 16 H 16 V 52 H 12 Z" fill="#0A0D06" /></svg>`,
-  hotbar_slot: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 8,0 H 56 V 4 H 60 V 8 H 64 V 56 H 60 V 60 H 56 V 64 H 8 V 60 H 4 V 56 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 56 V 8 H 60 V 56 H 56 V 60 H 8 V 56 H 4 V 8 H 8 Z" fill="#222B14" /><rect x="8" y="8" width="48" height="48" fill="#4A5D23" /><rect x="12" y="12" width="40" height="40" fill="#121809" /><path d="M 12,12 H 52 V 16 H 16 V 52 H 12 Z" fill="#0A0D06" /></svg>`,
-  hotbar_selector: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 8,0 H 56 V 4 H 60 V 8 H 64 V 56 H 60 V 60 H 56 V 64 H 8 V 60 H 4 V 56 H 0 V 8 H 4 V 4 H 8 Z" fill="#FFFFFF" /><path d="M 8,4 H 56 V 8 H 60 V 56 H 56 V 60 H 8 V 56 H 4 V 8 H 8 Z" fill="#A2D15B" /><rect x="10" y="10" width="44" height="44" fill="none" stroke="#222B14" stroke-width="2" /><rect x="12" y="12" width="40" height="40" fill="none" stroke="#88B04B" stroke-width="2" /></svg>`,
-  
-  menu_button_start: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" width="100%" height="100%" shape-rendering="crispEdges"><path d="M 4,0 H 116 V 2 H 118 V 4 H 120 V 36 H 118 V 38 H 116 V 40 H 4 V 38 H 2 V 36 H 0 V 4 H 2 V 2 H 4 Z" fill="#FFFFFF" /><path d="M 4,2 H 116 V 4 H 118 V 36 H 116 V 38 H 4 V 36 H 2 V 4 H 4 Z" fill="#222B14" /><rect x="4" y="4" width="112" height="32" fill="#4A5D23" /><rect x="6" y="6" width="108" height="4" fill="#6B8532" /></svg>`,
-  
-  item_wood: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="22" y="22" width="28" height="24" fill="#5C4033" /><rect x="22" y="42" width="28" height="4" fill="#3B2A1A" /><rect x="28" y="26" width="4" height="16" fill="#4A3429" /><rect x="38" y="24" width="4" height="18" fill="#4A3429" /><path d="M 14,22 H 22 V 42 H 14 Z" fill="#8B6914" /><path d="M 16,24 H 20 V 40 H 16 Z" fill="#C49A45" /><rect x="18" y="28" width="2" height="8" fill="#8B6914" /></svg>`,
-  item_stone: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 32,14 L 52,24 L 32,34 L 12,24 Z" fill="#B0B0B0" /><path d="M 12,24 L 32,34 V 50 L 12,40 Z" fill="#808080" /><path d="M 32,34 L 52,24 V 40 L 32,50 Z" fill="#505050" /><path d="M 32,16 L 48,24 L 32,32 L 16,24 Z" fill="#C8C8C8" /><rect x="20" y="30" width="4" height="4" fill="#606060" /></svg>`,
-  item_metal: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="28" y="12" width="8" height="40" fill="#707070" /><rect x="12" y="28" width="40" height="8" fill="#707070" /><rect x="18" y="18" width="28" height="28" fill="#808080" /><rect x="20" y="20" width="24" height="24" fill="#A0A0A0" /><rect x="32" y="22" width="6" height="6" fill="#B85C37" /><rect x="20" y="32" width="6" height="6" fill="#B85C37" /><rect x="26" y="26" width="12" height="12" fill="#222B14" /></svg>`,
-  item_fiber: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><path d="M 32,12 C 48,16 52,36 36,48 L 16,52 L 20,32 C 24,16 28,12 32,12 Z" fill="#557A2B" /><path d="M 32,14 C 44,18 48,34 34,44 L 20,48 L 22,32 C 26,18 28,14 32,14 Z" fill="#88B04B" /><path d="M 14,54 L 32,24" stroke="#3B2F1F" stroke-width="3" /><path d="M 26,34 L 34,30" stroke="#A2D15B" stroke-width="2" /><path d="M 22,40 L 30,38" stroke="#A2D15B" stroke-width="2" /></svg>`,
-  item_axe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="16" y="44" width="4" height="4" fill="#5C4033" /><rect x="20" y="40" width="4" height="4" fill="#5C4033" /><rect x="24" y="36" width="4" height="4" fill="#7A5230" /><rect x="28" y="32" width="4" height="4" fill="#7A5230" /><rect x="32" y="28" width="4" height="4" fill="#99663D" /><rect x="36" y="24" width="4" height="4" fill="#99663D" /><rect x="36" y="16" width="12" height="12" fill="#808080" /><rect x="44" y="12" width="8" height="12" fill="#A0A0A0" /><rect x="48" y="12" width="4" height="4" fill="#FFFFFF" /><rect x="36" y="24" width="6" height="6" fill="#C49A45" /></svg>`,
-  item_pickaxe: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="16" y="44" width="4" height="4" fill="#5C4033" /><rect x="20" y="40" width="4" height="4" fill="#5C4033" /><rect x="24" y="36" width="4" height="4" fill="#7A5230" /><rect x="28" y="32" width="4" height="4" fill="#7A5230" /><rect x="32" y="28" width="4" height="4" fill="#99663D" /><rect x="36" y="24" width="4" height="4" fill="#99663D" /><rect x="34" y="12" width="4" height="6" fill="#808080" /><rect x="38" y="14" width="12" height="8" fill="#A0A0A0" /><rect x="46" y="22" width="8" height="4" fill="#808080" /><rect x="42" y="14" width="4" height="4" fill="#FFFFFF" /></svg>`,
-  item_torch: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><rect x="28" y="28" width="8" height="24" fill="#5C4033" /><rect x="30" y="30" width="4" height="22" fill="#7A5230" /><rect x="24" y="16" width="16" height="14" fill="#FF4500" /><rect x="26" y="12" width="12" height="14" fill="#FF8C00" /><rect x="28" y="10" width="8" height="12" fill="#FFD700" /><rect x="30" y="14" width="4" height="4" fill="#FFFFFF" /></svg>`,
-  item_campfire: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="128" height="128" shape-rendering="crispEdges"><ellipse cx="32" cy="46" rx="22" ry="10" fill="#505050" /><ellipse cx="32" cy="44" rx="18" ry="8" fill="#222B14" /><rect x="18" y="42" width="28" height="4" transform="rotate(15 32 44)" fill="#5C4033" /><rect x="18" y="42" width="28" height="4" transform="rotate(-15 32 44)" fill="#4A3429" /><path d="M 24,38 C 24,24 32,16 32,16 C 32,16 40,24 40,38 Z" fill="#FF4500" /><path d="M 27,38 C 27,28 32,20 32,20 C 32,20 37,28 37,38 Z" fill="#FF8C00" /><rect x="30" y="30" width="4" height="8" fill="#FFD700" /></svg>`,
-  
-  feedback_banner: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 32" width="100%" height="100%" shape-rendering="crispEdges"><rect x="0" y="0" width="140" height="32" rx="4" fill="#121809" opacity="0.85" /><rect x="2" y="2" width="136" height="28" rx="2" fill="#222B14" opacity="0.9" stroke="#88B04B" stroke-width="2" /></svg>`
-};
-
-// --- Asset Preloader ---
+// --- UI Asset Loader ---
 const uiAssets = {};
-for (const name in rawSVGs) {
+const assetList = [
+    'joystick_base', 'joystick_knob', 'btn_break', 'btn_jump', 'btn_craft', 'btn_inventory',
+    'ui_window', 'ui_main_menu_frame', 'recipe_row', 'inventory_slot', 'hotbar_slot', 'hotbar_selector',
+    'menu_button_start',
+    'item_wood', 'item_stone', 'item_metal', 'item_fiber', 'item_axe', 'item_pickaxe', 'item_torch', 'item_campfire',
+    'feedback_banner'
+];
+assetList.forEach(name => {
     uiAssets[name] = new Image();
-    uiAssets[name].src = 'data:image/svg+xml;charset=utf8,' + encodeURIComponent(rawSVGs[name]);
-}
+    uiAssets[name].src = `assets/ui/${name}.svg`;
+});
 
 function drawUIImage(imgName, cx, cy, size) {
     if (uiAssets[imgName] && uiAssets[imgName].complete) {
@@ -257,7 +234,7 @@ function handleMoveClick(mx, my) {
         } else {
             let path = findPath([p.tx, p.ty], [closestTx, closestTy]);
             if (path.length > 0) {
-                p.path = path.slice(1); game.pendingInteraction = null; game.destinationMarker = { tx: closestTx, ty: closestTy };
+                p.path = path.slice(1); game.pendingInteraction = None; game.destinationMarker = { tx: closestTx, ty: closestTy };
             }
         }
     }
@@ -503,7 +480,6 @@ function render() {
         let frameY = (GAME_H - frameH) / 2;
         drawUIRect('ui_main_menu_frame', frameX, frameY, frameW, frameH);
         
-        // Title box is y=14 to y=32 (height 18) in 120 viewBox -> 15% height
         let titleBoxY = frameY + frameH * (14 / 120);
         let titleBoxH = frameH * (18 / 120);
         let titleCenterY = titleBoxY + titleBoxH * 0.5;
@@ -523,7 +499,7 @@ function render() {
         ctx.fillStyle = '#FFFFFF';
         ctx.font = `900 ${Math.floor(btnH * 0.4)}px "Courier New", monospace`;
         ctx.fillText("TAP TO START", GAME_W/2, btnY + btnH * 0.5);
-        ctx.textBaseline = 'alphabetic'; // Reset
+        ctx.textBaseline = 'alphabetic';
         return;
     }
 
@@ -676,7 +652,6 @@ function render() {
         
         drawUIRect('ui_window', winX, winY, winW, winH);
         
-        // Title perfectly inside the banner (y=10 to y=24 in viewBox 80h)
         let titleBoxY = winY + winH * (10 / 80);
         let titleBoxH = winH * (14 / 80);
         let titleCenterY = titleBoxY + titleBoxH * 0.5;
