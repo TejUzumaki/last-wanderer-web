@@ -497,28 +497,33 @@ function render() {
 
     // Start Screen Menu
     if (game.state === 'menu') {
-        let frameW = Math.min(GAME_W * 0.85, 480);
-        let frameH = frameW * (120 / 160);
+        let frameW = Math.min(GAME_W * 0.95, 640);
+        let frameH = frameW * (120 / 160); // 480
         let frameX = (GAME_W - frameW) / 2;
         let frameY = (GAME_H - frameH) / 2;
         drawUIRect('ui_main_menu_frame', frameX, frameY, frameW, frameH);
         
-        // Title text perfectly centered in the banner (y=14 to y=32 in viewBox 120h)
-        let titleY = frameY + (14 / 120) * frameH + ((32 - 14) / 120) * frameH * 0.7;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = `900 ${Math.floor(frameW * 0.06)}px "Courier New", monospace`;
-        ctx.textAlign = 'center';
-        ctx.fillText('THE LAST WANDERER', GAME_W/2, titleY);
+        // Title box is y=14 to y=32 (height 18) in 120 viewBox -> 15% height
+        let titleBoxY = frameY + frameH * (14 / 120);
+        let titleBoxH = frameH * (18 / 120);
+        let titleCenterY = titleBoxY + titleBoxH * 0.5;
         
-        let btnW = frameW * 0.6;
-        let btnH = btnW * (40 / 120);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `900 ${Math.floor(frameW * 0.08)}px "Courier New", monospace`;
+        ctx.fillText('THE LAST WANDERER', GAME_W/2, titleCenterY);
+        
+        let btnW = frameW * 0.5;
+        let btnH = btnW * (40 / 120); // 1/3 ratio
         let btnX = (GAME_W - btnW) / 2;
         let btnY = frameY + frameH * 0.52;
         drawUIRect('menu_button_start', btnX, btnY, btnW, btnH);
         
         ctx.fillStyle = '#FFFFFF';
         ctx.font = `900 ${Math.floor(btnH * 0.4)}px "Courier New", monospace`;
-        ctx.fillText("TAP TO START", GAME_W/2, btnY + btnH * 0.65);
+        ctx.fillText("TAP TO START", GAME_W/2, btnY + btnH * 0.5);
+        ctx.textBaseline = 'alphabetic'; // Reset
         return;
     }
 
@@ -606,9 +611,11 @@ function render() {
         ctx.fillStyle = '#A2D15B';
         ctx.font = `900 ${Math.floor(13 * btns.scale)}px "Courier New", monospace`;
         ctx.textAlign = 'center';
-        ctx.fillText(ft.text, ft.x, ft.y + 5);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ft.text, ft.x, ft.y);
     });
     ctx.globalAlpha = 1.0;
+    ctx.textBaseline = 'alphabetic';
 
     // Centered Hotbar
     let hbSize = Math.floor(58 * btns.scale);
@@ -617,15 +624,18 @@ function render() {
     let hbY = GAME_H - hbSize - (16 * btns.scale);
     for (let i = 0; i < 5; i++) {
         let hx = hbStartX + i * hbSize;
-        drawUIImage('hotbar_slot', hx + hbSize/2, hbY + hbSize/2, hbSize);
+        let slotCx = hx + hbSize/2;
+        let slotCy = hbY + hbSize/2;
+        
+        drawUIImage('hotbar_slot', slotCx, slotCy, hbSize);
+        
+        if (game.selectedSlot === i) {
+            drawUIImage('hotbar_selector', slotCx, slotCy, hbSize);
+        }
         
         let itemName = game.hotbar[i];
         if (itemName !== 'Hands' && game.inventory[itemName] > 0) {
-            drawUIImage('item_' + itemName.toLowerCase(), hx + hbSize/2, hbY + hbSize/2, hbSize * 0.75);
-        }
-        
-        if (game.selectedSlot === i) {
-            drawUIImage('hotbar_selector', hx + hbSize/2, hbY + hbSize/2, hbSize);
+            drawUIImage('item_' + itemName.toLowerCase(), slotCx, slotCy, hbSize * 0.65);
         }
         
         let count = game.inventory[itemName];
@@ -659,7 +669,7 @@ function render() {
         ctx.fillStyle = 'rgba(18,24,9,0.75)';
         ctx.fillRect(0,0,GAME_W,GAME_H);
         
-        let winW = Math.min(GAME_W * 0.85, 460);
+        let winW = Math.min(GAME_W * 0.95, 580);
         let winH = winW * (80 / 120); // Match SVG aspect ratio
         let winX = (GAME_W / 2) - (winW / 2);
         let winY = (GAME_H / 2) - (winH / 2);
@@ -667,11 +677,15 @@ function render() {
         drawUIRect('ui_window', winX, winY, winW, winH);
         
         // Title perfectly inside the banner (y=10 to y=24 in viewBox 80h)
-        let textY = winY + (10 / 80) * winH + ((24 - 10) / 80) * winH * 0.7;
+        let titleBoxY = winY + winH * (10 / 80);
+        let titleBoxH = winH * (14 / 80);
+        let titleCenterY = titleBoxY + titleBoxH * 0.5;
+
         ctx.fillStyle = '#FFFFFF'; 
         ctx.textAlign = 'center'; 
-        ctx.font = `900 ${Math.floor(winW * 0.04)}px "Courier New", monospace`;
-        ctx.fillText(game.state.toUpperCase(), GAME_W/2, textY);
+        ctx.textBaseline = 'middle';
+        ctx.font = `900 ${Math.floor(winW * 0.045)}px "Courier New", monospace`;
+        ctx.fillText(game.state.toUpperCase(), GAME_W/2, titleCenterY);
 
         // Inventory Popup Grid
         if (game.state === 'inventory') {
@@ -680,22 +694,24 @@ function render() {
             let gridW = winW * 0.8;
             let boxW = gridW / cols;
             let startX = GAME_W/2 - gridW/2;
-            let startY = winY + (30 / 80) * winH; // Start below banner
+            let startY = winY + winH * 0.35; // Start below banner
             
             for(let i=0; i<items.length; i++) {
                 let col = i % cols;
                 let row = Math.floor(i / cols);
                 let ix = startX + col * boxW;
                 let iy = startY + row * boxW;
+                let cx = ix + boxW/2;
+                let cy = iy + boxW/2;
                 
-                drawUIImage('inventory_slot', ix + boxW/2, iy + boxW/2, boxW * 0.9);
+                drawUIImage('inventory_slot', cx, cy, boxW * 0.9);
                 
                 let itemName = items[i];
                 if(game.inventory[itemName] > 0 || ['Wood','Stone','Metal','Fiber'].includes(itemName)) {
-                    drawUIImage('item_' + itemName.toLowerCase(), ix + boxW/2, iy + boxW/2, boxW * 0.7);
+                    drawUIImage('item_' + itemName.toLowerCase(), cx, cy, boxW * 0.65);
                     
                     ctx.fillStyle = '#FFFFFF'; 
-                    ctx.font = `900 ${Math.floor(winW * 0.025)}px "Courier New", monospace`; 
+                    ctx.font = `900 ${Math.floor(winW * 0.03)}px "Courier New", monospace`; 
                     ctx.textAlign = 'right';
                     ctx.fillText(game.inventory[itemName], ix + boxW - 8, iy + boxW - 8);
                 }
@@ -705,30 +721,33 @@ function render() {
         // Crafting Menu List
         if (game.state === 'crafting') {
             game.craftSlots = [];
-            let listW = winW * 0.82;
-            let rowH = (32 / 120) * winW * 0.5; // Scale row height based on window width
-            let startY = winY + (30 / 80) * winH; // Start below banner
+            let listW = winW * 0.85;
+            let rowH = winH * 0.12; // Scaled row height
+            let gap = winH * 0.03;  // Scaled gap
+            let startY = winY + winH * 0.35; // Start below banner
             
             game.recipes.forEach((rec, i) => {
                 let sx = GAME_W/2 - listW/2;
-                let sy = startY + i * (rowH + 10); // 10px gap between rows
+                let sy = startY + i * (rowH + gap);
                 
                 drawUIRect('recipe_row', sx, sy, listW, rowH);
-                drawUIImage('item_' + rec.result.toLowerCase(), sx + (rowH/2), sy + rowH/2, rowH * 0.8);
+                drawUIImage('item_' + rec.result.toLowerCase(), sx + rowH * 0.5, sy + rowH * 0.5, rowH * 0.8);
                 
                 ctx.textAlign = 'left'; 
+                ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#FFFFFF';
-                ctx.font = `900 ${Math.floor(winW * 0.03)}px "Courier New", monospace`;
-                ctx.fillText(rec.name, sx + rowH, sy + rowH * 0.4);
+                ctx.font = `900 ${Math.floor(winW * 0.035)}px "Courier New", monospace`;
+                ctx.fillText(rec.name, sx + rowH, sy + rowH * 0.35);
                 
                 let costStr = Object.keys(rec.cost).map(r => `${r}:${rec.cost[r]}`).join(' ');
                 ctx.fillStyle = '#88B04B';
-                ctx.font = `900 ${Math.floor(winW * 0.022)}px "Courier New", monospace`;
-                ctx.fillText(costStr, sx + rowH, sy + rowH * 0.75);
+                ctx.font = `900 ${Math.floor(winW * 0.025)}px "Courier New", monospace`;
+                ctx.fillText(costStr, sx + rowH, sy + rowH * 0.7);
                 
                 game.craftSlots.push({ recipe: rec, x: sx, y: sy, w: listW, h: rowH });
             });
         }
+        ctx.textBaseline = 'alphabetic'; // Reset baseline
     }
 }
 
