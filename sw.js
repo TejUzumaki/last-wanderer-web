@@ -1,4 +1,4 @@
-const cacheName = 'wanderer-v4';
+const cacheName = 'wanderer-v5';
 const filesToCache = [
   '/', '/index.html', '/main.js', '/manifest.json', '/sw.js',
   '/assets/ui/joystick_base.svg', '/assets/ui/joystick_knob.svg',
@@ -14,6 +14,7 @@ const filesToCache = [
 ];
 
 self.addEventListener('install', e => {
+  self.skipWaiting(); // Force the new SW to activate immediately
   e.waitUntil(caches.open(cacheName).then(cache => cache.addAll(filesToCache)));
 });
 
@@ -21,28 +22,21 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys => {
       return Promise.all(keys.map(k => {
-        if (k !== cacheName) return caches.delete(k);
+        if (k !== cacheName) return caches.delete(k); // Delete old cache
       }));
-    })
+    }).then(() => self.clients.claim()) // Take control of all open pages
   );
 });
 
-// Fetch from cache first, then network. Cache new requests dynamically.
 self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(res => {
       return res || fetch(e.request).then(fetchRes => {
-        // Check if we received a valid response
-        if(!fetchRes || fetchRes.status !== 200 || fetchRes.type !== 'basic') {
-          return fetchRes;
-        }
-        // Clone the response because it's a stream
+        if(!fetchRes || fetchRes.status !== 200 || fetchRes.type !== 'basic') return fetchRes;
         var responseToCache = fetchRes.clone();
-        caches.open(cacheName).then(cache => {
-          cache.put(e.request, responseToCache);
-        });
+        caches.open(cacheName).then(cache => cache.put(e.request, responseToCache));
         return fetchRes;
-      }).catch(() => caches.match('/index.html')); // Offline fallback
+      }).catch(() => caches.match('/index.html'));
     })
   );
 });
