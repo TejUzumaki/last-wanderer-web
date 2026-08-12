@@ -203,6 +203,16 @@ function addShadow(faces, px, pz, r, op=80) {
     faces.push({ verts: [[px-r, 0.01, pz-r], [px+r, 0.01, pz-r], [px+r, 0.01, pz+r], [px-r, 0.01, pz+r]], color: `rgba(18,24,9,${(op/255)*nf})` });
 }
 
+// --- Interaction Logic ---
+function checkToolRequirement(entity) {
+    let selectedItem = game.hotbar[game.selectedSlot];
+    if ((entity.type === 'rock' || entity.type === 'ruin_wall') && selectedItem !== 'Pickaxe') {
+        game.feedbackTexts.push({ text: 'Need Pickaxe!', x: GAME_W/2, y: GAME_H/2, timer: 2.0 });
+        return false;
+    }
+    return true;
+}
+
 function handleMoveClick(mx, my) {
     let closestTx = -1, closestTy = -1, minDist = 1000.0;
     let p = game.player, cam = [p.x - 10, 12, p.z - 10];
@@ -234,7 +244,7 @@ function handleMoveClick(mx, my) {
         } else {
             let path = findPath([p.tx, p.ty], [closestTx, closestTy]);
             if (path.length > 0) {
-                p.path = path.slice(1); game.pendingInteraction = None; game.destinationMarker = { tx: closestTx, ty: closestTy };
+                p.path = path.slice(1); game.pendingInteraction = null; game.destinationMarker = { tx: closestTx, ty: closestTy };
             }
         }
     }
@@ -249,6 +259,8 @@ function handleBreak() {
         if (d < minD) { minD = d; closest = e; }
     });
     if (closest) {
+        if (!checkToolRequirement(closest)) return; // Check tool before pathing
+        
         let bestAdj = null, minAdjD = 999;
         for(let dx=-1; dx<=1; dx++) {
             for(let dy=-1; dy<=1; dy++) {
@@ -389,7 +401,7 @@ function update(dt) {
     if (game.state !== 'playing') return;
     
     game.timeOfDay = (game.timeOfDay + dt * 0.008) % 1.0;
-    let lv = Math.sin(game.timeOfDay * Math.PI * 2 - Math.PI / 2);
+    let lv = Math.sin(game.timeOfDay * Math.PI * 2 - math.PI / 2);
     game.ambientLight = 0.35 + (lv + 1) / 2 * 0.65;
 
     let p = game.player;
@@ -441,10 +453,20 @@ function update(dt) {
             p.state = 'gather';
             let ddx = (e.tx+0.5) - p.x, ddz = (e.ty+0.5) - p.z;
             p.targetAngle = Math.atan2(ddx, ddz);
-            if (!p.gatherTimer) p.gatherTimer = 1.0;
+            
+            // Tool Logic
+            let gatherTime = 1.0;
+            if (e.type === 'tree' && game.hotbar[game.selectedSlot] === 'Axe') gatherTime = 0.5;
+            
+            if (!p.gatherTimer) p.gatherTimer = gatherTime;
             p.gatherTimer -= dt;
             if (p.gatherTimer <= 0) {
-                if (e.type === 'tree') { game.inventory.Wood++; game.feedbackTexts.push({text:'+1 Wood', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
+                if (e.type === 'tree') {
+                    let yieldAmount = 1;
+                    if (game.hotbar[game.selectedSlot] === 'Axe') yieldAmount = 2;
+                    game.inventory.Wood += yieldAmount; 
+                    game.feedbackTexts.push({text:`+${yieldAmount} Wood`, x:GAME_W/2, y:GAME_H/2, timer:2.0});
+                }
                 else if (e.type === 'rock') { game.inventory.Stone++; game.feedbackTexts.push({text:'+1 Stone', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
                 else if (e.type === 'metal') { game.inventory.Metal++; game.feedbackTexts.push({text:'+1 Metal', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
                 else if (e.type === 'bush') { game.inventory.Fiber++; game.feedbackTexts.push({text:'+1 Fiber', x:GAME_W/2, y:GAME_H/2, timer:2.0}); }
@@ -569,6 +591,15 @@ function render() {
     let lao = rotateY(-0.35,0,0,p.angle); addCube(faces, p.x+lao[0], shoulderY, p.z+lao[2], 0.2, 0.5, 0.2, [136,176,75], -asl, p.angle, 0, -0.25, 0);
     addCube(faces, p.x, headY, p.z, 0.3, 0.3, 0.3, [210,160,110], 0, p.angle);
 
+    // 3D Tool Equipping
+    let equippedTool = game.hotbar[game.selectedSlot];
+    if (equippedTool === 'Axe' || equippedTool === 'Pickaxe') {
+        let toolColor = [100, 70, 40]; // Wooden handle
+        addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.12, 0.4, 0.12, toolColor, -asr, p.angle, 0, -0.6, 0);
+        let headColor = [130, 130, 130]; // Stone head
+        addCube(faces, p.x+rao[0], shoulderY, p.z+rao[2], 0.25, 0.2, 0.25, headColor, -asr, p.angle, 0, -0.8, 0);
+    }
+
     // Rasterize Sorted Faces
     let renderables = [];
     faces.forEach(f => {
@@ -619,7 +650,7 @@ function render() {
             ctx.fillStyle = '#FFFFFF'; 
             ctx.font = `900 ${Math.floor(11 * btns.scale)}px "Courier New", monospace`; 
             ctx.textAlign = 'right';
-            ctx.fillText(count, hx + hbSize - 6, hbY + 16);
+            ctx.fillText(count, hx + hbSize - 6, hbY + 15); // Top-Right
         }
     }
 
@@ -688,7 +719,7 @@ function render() {
                     ctx.fillStyle = '#FFFFFF'; 
                     ctx.font = `900 ${Math.floor(winW * 0.03)}px "Courier New", monospace`; 
                     ctx.textAlign = 'right';
-                    ctx.fillText(game.inventory[itemName], ix + boxW - 8, iy + boxW - 8);
+                    ctx.fillText(game.inventory[itemName], ix + boxW - 8, iy + 15); // Top-Right
                 }
             }
         }
