@@ -16,7 +16,7 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// --- UI Asset Loader ---
+// --- UI Asset Preloader ---
 const uiAssets = {};
 const assetList = [
     'joystick_base', 'joystick_knob', 'btn_break', 'btn_jump', 'btn_craft', 'btn_inventory',
@@ -25,10 +25,20 @@ const assetList = [
     'item_wood', 'item_stone', 'item_metal', 'item_fiber', 'item_axe', 'item_pickaxe', 'item_torch', 'item_campfire',
     'feedback_banner'
 ];
-assetList.forEach(name => {
-    uiAssets[name] = new Image();
-    uiAssets[name].src = `assets/ui/${name}.svg`;
-});
+
+function loadAssets() {
+    let promises = [];
+    assetList.forEach(name => {
+        uiAssets[name] = new Image();
+        let p = new Promise((resolve, reject) => {
+            uiAssets[name].onload = () => resolve();
+            uiAssets[name].onerror = () => reject(new Error(`Failed to load ${name}`));
+        });
+        uiAssets[name].src = `assets/ui/${name}.svg`;
+        promises.push(p);
+    });
+    return Promise.all(promises);
+}
 
 function drawUIImage(imgName, cx, cy, size) {
     if (uiAssets[imgName] && uiAssets[imgName].complete) {
@@ -400,8 +410,9 @@ function update(dt) {
     game.frameCount++;
     if (game.state !== 'playing') return;
     
+    // FIXED: Math.PI typo
     game.timeOfDay = (game.timeOfDay + dt * 0.008) % 1.0;
-    let lv = Math.sin(game.timeOfDay * Math.PI * 2 - math.PI / 2);
+    let lv = Math.sin(game.timeOfDay * Math.PI * 2 - Math.PI / 2);
     game.ambientLight = 0.35 + (lv + 1) / 2 * 0.65;
 
     let p = game.player;
@@ -764,4 +775,21 @@ function loop(now) {
     render();
     requestAnimationFrame(loop);
 }
-requestAnimationFrame(loop);
+
+// --- Initialize Game with Preloader ---
+// Draw loading screen
+ctx.fillStyle = '#121809';
+ctx.fillRect(0, 0, GAME_W, GAME_H);
+ctx.fillStyle = '#88B04B';
+ctx.font = '900 24px "Courier New", monospace';
+ctx.textAlign = 'center';
+ctx.fillText('LOADING...', GAME_W/2, GAME_H/2);
+
+loadAssets().then(() => {
+    lastTime = performance.now();
+    requestAnimationFrame(loop);
+}).catch(err => {
+    console.error("Asset loading failed:", err);
+    ctx.fillStyle = 'red';
+    ctx.fillText('Failed to load assets', GAME_W/2, GAME_H/2 + 40);
+});
